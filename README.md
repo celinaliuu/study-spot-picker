@@ -17,6 +17,27 @@ Everything tweakable is in [`js/spots.js`](js/spots.js): tags, hours, coordinate
 Spots with unknown hours use `CONFIG.PLACEHOLDER_HOURS` (7am–11pm). Change it in one place.
 Library hours come from Purdue Libraries (2023). **Re-check before finals.**
 
+## How scoring works (short version)
+
+1. **Hard filters** remove a spot if it's closed or closing within 45 min, if it's Burton Morgan on a weekend, or if it's Downtown and the group has no car.
+2. Each player gets a **utility** per spot from their answers (noise fit scaled by stress, work type, energy, session length, coffee).
+3. **Avoid misery:** a player is *miserable* if their utility is below `MISERY_THRESHOLD` or a veto hits ("silence please" at a buzzy/loud spot or Hagle's instruments, "want to talk" at a silent spot, group work at a solo-only spot). Each miserable player costs `MISERY_PENALTY`, and ranking sorts by **fewest miserable first**, score second.
+4. **Group modifiers** cover distance (scaled by weather), low priority, often full (worse for long sessions and big groups), group-space bonus for 4+, and time rules (Frieda after 10pm).
+5. The wheel gets the top 3, with slices proportional to score and clamped to 15–60%.
+
+## Assumptions to check
+
+These are judgment calls where the spec was silent or ambiguous. All of them are `CONFIG` values or data fields in `js/spots.js`:
+
+- **Energy** has no rule in the spec. Food-coma players favor comfy spots, coffee, and short walks; wired players tolerate more noise.
+- **Unknown hours** use 7am–11pm (the spec only gave the 11pm close).
+- **Nice weather** sets the distance penalty to 0, per the spec (`WEATHER_DISTANCE_FACTOR.nice`). I'd suggest `0.4`, since a 25-min walk still costs something.
+- **Downtown with a car** counts as a short drive (flat −3), not a ~45-min walk.
+- **Closing mid-session** is a soft penalty: a spot that closes before your chosen session length ends loses a little.
+- **WALC** is quiet from 7pm to 6am.
+- **Location more than 3 km from campus** is treated as a bad fix, and the dining court picker shows instead.
+- **"None of these"** is an explicit reroll button that shows ranks 4–6. "Spin again" re-spins the same 3. Either one uses up the single reroll.
+
 ## Coordinates to verify
 
 These are **guesses**. Click each map link and fix anything in `js/spots.js` that's off.
