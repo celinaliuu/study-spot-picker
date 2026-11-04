@@ -1,0 +1,81 @@
+# Study Spot Picker (Purdue)
+
+A web app that ends the "idk, where do you want to study?" debate. Friends finish eating at a dining court, pass one phone around, each answers a quick mood quiz, and the app spins a wheel between the 3 spots that fit the group best.
+
+## Who it's for
+- Groups of **2–6 friends** at Purdue who clash because they're in different moods.
+- Used **right after eating at a dining court**, so the pick is for *right now*.
+
+## Tech constraints
+- Plain HTML/CSS/JS, single page, no backend, no build step. Must work well on a phone.
+- Keep spot data in one easy-to-edit file (`spots.js` or `spots.json`) so tags can be tweaked without touching logic.
+- Weather: Open-Meteo API (free, no key). West Lafayette ≈ 40.4237, -86.9212.
+
+## Flow
+1. **Start screen**: get the starting point with a "Use my location" button (browser geolocation). If location is denied or unavailable, fall back to choosing the dining court you're leaving from (Earhart, Ford, Hillenbrand, Wiley, Windsor). Also choose the number of players (2–6) and answer "Do we have a car / willing to walk far?" (yes/no).
+2. **Pass-the-phone quiz**: each player enters a name and taps through the questions. A "pass to next person" screen in between hides the previous answers.
+3. **Scoring** (see below), using the current weather plus the current day and time.
+4. **Wheel**: the top 3 spots, with slices weighted by score so the best fit is likelier. Spin animation.
+5. **Result**: the spot, a one-line "why" (e.g. "Quiet enough for the stressed people, coffee nearby, and it's 41° and drizzly"), and a Google Maps link.
+6. **One reroll** per session (it re-spins the same top 3, or the next 3 if everyone hates them).
+
+## Quiz (one tap per question)
+1. **Stress**: chill / kinda stressed / panicking
+2. **Energy**: wired / normal / food-coma tired
+3. **Noise**: silence please / background buzz / want to talk
+4. **Work type**: solo reading/writing / problem sets together / group project
+5. **How long**: quick hour / a few hours / until they kick us out
+6. **Coffee?**: yes / don't care
+
+## Scoring rules
+- Each answer adds or subtracts points per spot based on its tags.
+- **Avoid misery over majority**: if any player would strongly dislike a spot (e.g. "panicking" + "silence please" vs. a loud spot), apply a big penalty. The goal is the fewest unhappy people, not the most votes.
+- **Hard filters** (remove the spot entirely):
+  - Closed now, or closing within ~45 min.
+  - Burton Morgan on Saturday/Sunday.
+  - Downtown Lafayette unless the group said they have a car / will walk far.
+- **Weather**: in rain, snow, or cold (< 40°F), penalize far spots and downtown. In nice weather, remove the distance penalty.
+- **Distance**: penalty based on the walk from the user's current location (or the chosen dining court if location isn't available). Show the approximate walking time on the result screen (e.g. "~8 min walk").
+- **Time of day**: WALC is "loud" before ~7pm and "quiet" after.
+- **Low priority** spots get a flat penalty.
+- **Often full** spots get a small penalty, bigger for longer sessions and bigger groups.
+- Groups of 4+ get a bonus for spots with group rooms or big tables.
+
+## Spots
+Assume the group can get into every spot, dorms included. Hours marked `?` are unknown: use a placeholder close time of 11pm and make it easy to change.
+
+| Spot | Noise | Good for | Coffee/food | Often full | Other | Hours |
+|---|---|---|---|---|---|---|
+| WALC | loud by day, quiet at night | both | — | yes | big, lots of outlets | 24/7 with PUID swipe |
+| Stewart Center library (Stew) | quiet | solo | — | no | lock-in | Mon–Thu 8am–12am, Fri 8am–5pm, Sat 1–5pm, Sun 1pm–12am |
+| Beering Hall | chill | both | — | no | few spots, but alright | ? |
+| Frieda Parker Hall | chill | both | — | study rooms often full | dorm, nice tables; common area lights off after 10pm | ? |
+| Honors North | quiet | solo | — | no | "Hogwarts library" lock-in; few outlets | ? |
+| Honors South | chill | both | — | no | comfy dorm, tables | ? |
+| Winifred Parker Hall | chill | both | market nearby | sometimes | nice tables | ? |
+| Hagle Hall | chill | both | — | yes | bands building, can hear instruments | ? |
+| University Hall | quiet | solo | — | yes | — | ? |
+| PMU | loud | group | market + food | no | nice tall tables | ? |
+| Rawls / Krannert | chill | both | — | no | a bit far; seats alright | Parrish Library: same as Stew |
+| South Hall | chill | group | connects to Hillenbrand Dining | no | new dorm, large conference rooms; farther west | ? |
+| DSAI (2nd floor) | quiet | solo | — | no | clean, lock-in | ? |
+| Chaney-Hale | chill | both | — | yes | labs, people coming and going; **low priority** | ? |
+| Downtown Lafayette (coffee shops / Tippecanoe library) | buzzy | both | coffee | no | car or long walk only | ? |
+| MSEE | chill | both | — | no | — | ? |
+| Burton Morgan (Entre) | quiet | solo | market (weekdays) | no | windows, lock-in; **closed weekends** | ? |
+| Meredith South | chill | both | — | no | nice dorm | ? |
+
+Library hours come from Purdue Libraries (2023) and may have changed. Re-check before finals.
+
+### Distances
+Geolocation only works on HTTPS or localhost. That's fine for GitHub Pages and local testing, but don't open the file directly as file://. Give each spot approximate lat/lng coordinates, and each dining court too. Compute walking distance from them. Put all coordinates in the data file and **list them for me to verify on a map**, since guesses could be off.
+
+## Look and feel
+Not decided yet. Keep it clean and mobile-first for now, with big tap targets. A weather-reactive theme might come later.
+
+## Later ideas (not v1)
+- Thumbs up/down after a session to learn what the group likes
+- Fairness memory (whoever lost last time gets a bit more weight)
+- Shared link so everyone votes from their own phone
+- Focus timer after the pick
+- Weather-reactive theme
