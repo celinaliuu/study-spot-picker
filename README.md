@@ -35,36 +35,36 @@ These are judgment calls where the spec was silent or ambiguous. All of them are
 - **Location more than 3 km from campus** is treated as a bad fix, and the dining court picker shows instead.
 - **"None of these"** is an explicit reroll button that shows ranks 4–6. "Spin again" re-spins the same 3. Either one uses up the single reroll.
 
-## Coordinates to verify
+## Coordinates
 
-These are **guesses**. Click each map link and fix anything in `js/spots.js` that's off.
-"low" confidence means it's probably within a block or two but could be on the wrong building.
+Building centers, mostly from OpenStreetMap building outlines (checked November 2026).
+**PMU is still an unverified guess.** Spot-check it, plus anything that looks off.
 
-| Place | Type | Lat, Lng | Confidence | Check |
+| Place | Type | Lat, Lng | Source | Check |
 |---|---|---|---|---|
-| Earhart | dining court | 40.4256, -86.9250 | low | [map](https://www.google.com/maps?q=40.4256,-86.925) |
-| Ford | dining court | 40.4321, -86.9196 | medium | [map](https://www.google.com/maps?q=40.4321,-86.9196) |
-| Hillenbrand | dining court | 40.4268, -86.9268 | low | [map](https://www.google.com/maps?q=40.4268,-86.9268) |
-| Wiley | dining court | 40.4285, -86.9207 | low | [map](https://www.google.com/maps?q=40.4285,-86.9207) |
-| Windsor | dining court | 40.4262, -86.9212 | low | [map](https://www.google.com/maps?q=40.4262,-86.9212) |
-| Wilmeth Active Learning Center | spot | 40.4274, -86.9131 | medium | [map](https://www.google.com/maps?q=40.4274,-86.9131) |
-| Stewart Center (Hicks/Stew library) | spot | 40.4251, -86.9128 | medium | [map](https://www.google.com/maps?q=40.4251,-86.9128) |
-| Beering Hall | spot | 40.4254, -86.9162 | medium | [map](https://www.google.com/maps?q=40.4254,-86.9162) |
-| Frieda Parker Hall | spot | 40.4266, -86.9240 | low | [map](https://www.google.com/maps?q=40.4266,-86.924) |
-| Honors North | spot | 40.4281, -86.9236 | low | [map](https://www.google.com/maps?q=40.4281,-86.9236) |
-| Honors South | spot | 40.4275, -86.9236 | low | [map](https://www.google.com/maps?q=40.4275,-86.9236) |
-| Winifred Parker Hall | spot | 40.4260, -86.9240 | low | [map](https://www.google.com/maps?q=40.426,-86.924) |
-| Hagle Hall | spot | 40.4279, -86.9157 | low | [map](https://www.google.com/maps?q=40.4279,-86.9157) |
-| University Hall | spot | 40.4257, -86.9151 | medium | [map](https://www.google.com/maps?q=40.4257,-86.9151) |
-| Purdue Memorial Union | spot | 40.4247, -86.9110 | medium | [map](https://www.google.com/maps?q=40.4247,-86.911) |
-| Rawls Hall / Krannert (Parrish Library) | spot | 40.4236, -86.9108 | medium | [map](https://www.google.com/maps?q=40.4236,-86.9108) |
-| South Hall | spot | 40.4258, -86.9285 | low | [map](https://www.google.com/maps?q=40.4258,-86.9285) |
-| Hall of Data Science and AI | spot | 40.4290, -86.9142 | low | [map](https://www.google.com/maps?q=40.429,-86.9142) |
-| Chaney-Hale | spot | 40.4266, -86.9122 | low | [map](https://www.google.com/maps?q=40.4266,-86.9122) |
-| Downtown Lafayette (coffee shops / Tippecanoe library) | spot | 40.4170, -86.8890 | medium | [map](https://www.google.com/maps?q=40.417,-86.889) |
-| Materials and Electrical Engineering Building | spot | 40.4295, -86.9118 | medium | [map](https://www.google.com/maps?q=40.4295,-86.9118) |
-| Burton D. Morgan Center for Entrepreneurship | spot | 40.4223, -86.9232 | low | [map](https://www.google.com/maps?q=40.4223,-86.9232) |
-| Meredith South | spot | 40.4248, -86.9233 | low | [map](https://www.google.com/maps?q=40.4248,-86.9233) |
+| Earhart | dining court | 40.42567, -86.92525 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42567,-86.92525) |
+| Ford | dining court | 40.43210, -86.91963 | OpenStreetMap | [map](https://www.google.com/maps?q=40.4321,-86.91963) |
+| Hillenbrand | dining court | 40.42662, -86.92686 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42662,-86.92686) |
+| Wiley | dining court | 40.42854, -86.92077 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42854,-86.92077) |
+| Windsor | dining court | 40.42698, -86.92100 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42698,-86.921) |
+| Wilmeth Active Learning Center | spot | 40.42738, -86.91323 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42738,-86.91323) |
+| Stewart Center (Hicks/Stew library) | spot | 40.42506, -86.91274 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42506,-86.91274) |
+| Beering Hall | spot | 40.42557, -86.91608 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42557,-86.91608) |
+| Frieda Parker Hall | spot | 40.42828, -86.91965 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42828,-86.91965) |
+| Honors North | spot | 40.42678, -86.91974 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42678,-86.91974) |
+| Honors South | spot | 40.42578, -86.91949 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42578,-86.91949) |
+| Winifred Parker Hall | spot | 40.42785, -86.92033 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42785,-86.92033) |
+| Hagle Hall | spot | 40.42707, -86.91882 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42707,-86.91882) |
+| University Hall | spot | 40.42569, -86.91511 | you | [map](https://www.google.com/maps?q=40.42569,-86.91511) |
+| Purdue Memorial Union | spot | 40.42470, -86.91100 | **unverified guess** | [map](https://www.google.com/maps?q=40.4247,-86.911) |
+| Rawls Hall / Krannert (Parrish Library) | spot | 40.42369, -86.90982 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42369,-86.90982) |
+| South Hall | spot | 40.42581, -86.92850 | you | [map](https://www.google.com/maps?q=40.42581,-86.9285) |
+| Hall of Data Science and AI | spot | 40.42900, -86.91419 | you | [map](https://www.google.com/maps?q=40.429,-86.91419) |
+| Chaney-Hale | spot | 40.42859, -86.91552 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42859,-86.91552) |
+| Downtown Lafayette (coffee shops / Tippecanoe library) | spot | 40.41687, -86.88931 | OpenStreetMap | [map](https://www.google.com/maps?q=40.41687,-86.88931) |
+| Materials and Electrical Engineering Building | spot | 40.42934, -86.91267 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42934,-86.91267) |
+| Burton D. Morgan Center for Entrepreneurship | spot | 40.42375, -86.92285 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42375,-86.92285) |
+| Meredith South | spot | 40.42560, -86.92317 | OpenStreetMap | [map](https://www.google.com/maps?q=40.4256,-86.92317) |
 
 ## Tests
 

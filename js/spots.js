@@ -66,8 +66,8 @@ export const NOISE = { QUIET: 0, CHILL: 1, BUZZY: 2, LOUD: 3 };
 //   closedDays   days the spot is closed entirely
 //   timeRules    [{ fromHour, toHour, penalty, why }] time-based penalties
 //   quirks       ['instruments'] → bad for "silence please"
-//   lat/lng      APPROXIMATE, verify on a map (see README)
-//   coordConfidence  'medium' | 'low': how sure the coordinate guess is
+//   lat/lng      building center
+//   coordSource  'osm' (OpenStreetMap building outline) | 'you' (checked by hand) | 'guess' (unverified)
 // ---------------------------------------------------------------------------
 const base = {
   noiseRules: [],
@@ -92,7 +92,7 @@ const spot = (s) => ({ ...base, ...s });
 export const SPOTS = [
   spot({
     id: 'walc', name: 'WALC', fullName: 'Wilmeth Active Learning Center',
-    lat: 40.4274, lng: -86.9131, coordConfidence: 'medium',
+    lat: 40.42738, lng: -86.91323, coordSource: 'osm',
     noise: NOISE.LOUD,
     noiseRules: [{ fromHour: 19, toHour: 6, noise: NOISE.QUIET }], // quiet after ~7pm
     goodFor: 'both', oftenFull: 2, groupSpace: true, outlets: 'many',
@@ -101,21 +101,21 @@ export const SPOTS = [
   }),
   spot({
     id: 'stew', name: 'Stewart Center library', shortName: 'Stew', fullName: 'Stewart Center (Hicks/Stew library)',
-    lat: 40.4251, lng: -86.9128, coordConfidence: 'medium',
+    lat: 40.42506, lng: -86.91274, coordSource: 'osm',
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
     notes: 'Lock-in spot.',
     mapsQuery: 'Stewart Center, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'beering', name: 'Beering Hall',
-    lat: 40.4254, lng: -86.9162, coordConfidence: 'medium',
+    lat: 40.42557, lng: -86.91608, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both',
     notes: 'Few spots, but alright.',
     mapsQuery: 'Beering Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'frieda', shortName: 'Frieda Parker', name: 'Frieda Parker Hall',
-    lat: 40.4266, lng: -86.9240, coordConfidence: 'low',
+    lat: 40.42828, lng: -86.91965, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both', roomsOftenFull: true, groupSpace: true, comfy: true,
     timeRules: [{ fromHour: 22, toHour: 6, penalty: 3, why: 'common area lights go off after 10pm' }],
     notes: 'Dorm, nice tables. Study rooms often full.',
@@ -123,89 +123,89 @@ export const SPOTS = [
   }),
   spot({
     id: 'honors-north', name: 'Honors North',
-    lat: 40.4281, lng: -86.9236, coordConfidence: 'low',
+    lat: 40.42678, lng: -86.91974, coordSource: 'osm',
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true, outlets: 'few',
     notes: '"Hogwarts library" lock-in. Few outlets.',
     mapsQuery: 'Honors College and Residences North, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'honors-south', name: 'Honors South',
-    lat: 40.4275, lng: -86.9236, coordConfidence: 'low',
+    lat: 40.42578, lng: -86.91949, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both', comfy: true, groupSpace: true,
     notes: 'Comfy dorm, tables.',
     mapsQuery: 'Honors College and Residences South, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'winifred', shortName: 'Winifred Parker', name: 'Winifred Parker Hall',
-    lat: 40.4260, lng: -86.9240, coordConfidence: 'low',
+    lat: 40.42785, lng: -86.92033, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both', coffee: 1, oftenFull: 1, groupSpace: true,
     notes: 'Nice tables, market nearby.',
     mapsQuery: 'Winifred Parker Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'hagle', name: 'Hagle Hall',
-    lat: 40.4279, lng: -86.9157, coordConfidence: 'low',
+    lat: 40.42707, lng: -86.91882, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both', oftenFull: 2, quirks: ['instruments'],
     notes: 'Bands building, you can hear instruments.',
     mapsQuery: 'Hagle Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'uhall', shortName: 'University Hall', name: 'University Hall',
-    lat: 40.4257, lng: -86.9151, coordConfidence: 'medium',
+    lat: 40.42569, lng: -86.91511, coordSource: 'you',
     noise: NOISE.QUIET, goodFor: 'solo', oftenFull: 2,
     mapsQuery: 'University Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'pmu', name: 'PMU', fullName: 'Purdue Memorial Union',
-    lat: 40.4247, lng: -86.9110, coordConfidence: 'medium',
+    lat: 40.4247, lng: -86.911, coordSource: 'guess',
     noise: NOISE.LOUD, goodFor: 'group', coffee: 2, groupSpace: true,
     notes: 'Market + food, nice tall tables.',
     mapsQuery: 'Purdue Memorial Union, West Lafayette, IN',
   }),
   spot({
     id: 'rawls', shortName: 'Rawls/Krannert', name: 'Rawls / Krannert', fullName: 'Rawls Hall / Krannert (Parrish Library)',
-    lat: 40.4236, lng: -86.9108, coordConfidence: 'medium',
+    lat: 40.42369, lng: -86.90982, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both',
     notes: 'A bit far, seats alright.',
     mapsQuery: 'Rawls Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'south-hall', name: 'South Hall',
-    lat: 40.4258, lng: -86.9285, coordConfidence: 'low',
+    lat: 40.42581, lng: -86.9285, coordSource: 'you',
     noise: NOISE.CHILL, goodFor: 'group', coffee: 1, groupSpace: true, comfy: true,
     notes: 'New dorm, large conference rooms, connects to Hillenbrand Dining. Farther west.',
     mapsQuery: 'South Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'dsai', shortName: 'DSAI', name: 'DSAI (2nd floor)', fullName: 'Hall of Data Science and AI',
-    lat: 40.4290, lng: -86.9142, coordConfidence: 'low',
+    lat: 40.429, lng: -86.91419, coordSource: 'you',
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
     notes: 'Clean, lock-in.',
     mapsQuery: 'Hall of Data Science and AI, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'chaney-hale', name: 'Chaney-Hale',
-    lat: 40.4266, lng: -86.9122, coordConfidence: 'low',
+    lat: 40.42859, lng: -86.91552, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both', oftenFull: 2, lowPriority: true,
     notes: 'Labs, people coming and going.',
     mapsQuery: 'Chaney-Hale Hall of Science, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'downtown', shortName: 'Downtown', name: 'Downtown Lafayette', fullName: 'Downtown Lafayette (coffee shops / Tippecanoe library)',
-    lat: 40.4170, lng: -86.8890, coordConfidence: 'medium', // ~Tippecanoe County Public Library
+    lat: 40.41687, lng: -86.88931, coordSource: 'osm', // ~Tippecanoe County Public Library
     noise: NOISE.BUZZY, goodFor: 'both', coffee: 2, requiresCar: true,
     notes: 'Car or long walk only.',
     mapsQuery: 'coffee shops downtown Lafayette, IN',
   }),
   spot({
     id: 'msee', name: 'MSEE', fullName: 'Materials and Electrical Engineering Building',
-    lat: 40.4295, lng: -86.9118, coordConfidence: 'medium',
+    lat: 40.42934, lng: -86.91267, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both',
     mapsQuery: 'MSEE Building, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'burton-morgan', shortName: 'Burton Morgan', name: 'Burton Morgan', fullName: 'Burton D. Morgan Center for Entrepreneurship',
-    lat: 40.4223, lng: -86.9232, coordConfidence: 'low',
+    lat: 40.42375, lng: -86.92285, coordSource: 'osm',
     noise: NOISE.QUIET, goodFor: 'solo', coffee: 1, coffeeDays: [1, 2, 3, 4, 5], lockIn: true,
     closedDays: [0, 6], // closed weekends
     notes: 'Windows, lock-in. Market on weekdays.',
@@ -213,7 +213,7 @@ export const SPOTS = [
   }),
   spot({
     id: 'meredith-south', shortName: 'Meredith South', name: 'Meredith South',
-    lat: 40.4248, lng: -86.9233, coordConfidence: 'low',
+    lat: 40.4256, lng: -86.92317, coordSource: 'osm',
     noise: NOISE.CHILL, goodFor: 'both', comfy: true,
     notes: 'Nice dorm.',
     mapsQuery: 'Meredith South Hall, Purdue University, West Lafayette, IN',
@@ -221,12 +221,12 @@ export const SPOTS = [
 ];
 
 // ---------------------------------------------------------------------------
-// Dining courts: the fallback starting point. APPROXIMATE, verify on a map.
+// Dining courts: the fallback starting point. Coordinates from OpenStreetMap.
 // ---------------------------------------------------------------------------
 export const DINING_COURTS = [
-  { id: 'earhart', name: 'Earhart', lat: 40.4256, lng: -86.9250, coordConfidence: 'low' },
-  { id: 'ford', name: 'Ford', lat: 40.4321, lng: -86.9196, coordConfidence: 'medium' },
-  { id: 'hillenbrand', name: 'Hillenbrand', lat: 40.4268, lng: -86.9268, coordConfidence: 'low' },
-  { id: 'wiley', name: 'Wiley', lat: 40.4285, lng: -86.9207, coordConfidence: 'low' },
-  { id: 'windsor', name: 'Windsor', lat: 40.4262, lng: -86.9212, coordConfidence: 'low' },
+  { id: 'earhart', name: 'Earhart', lat: 40.42567, lng: -86.92525, coordSource: 'osm' },
+  { id: 'ford', name: 'Ford', lat: 40.4321, lng: -86.91963, coordSource: 'osm' },
+  { id: 'hillenbrand', name: 'Hillenbrand', lat: 40.42662, lng: -86.92686, coordSource: 'osm' },
+  { id: 'wiley', name: 'Wiley', lat: 40.42854, lng: -86.92077, coordSource: 'osm' },
+  { id: 'windsor', name: 'Windsor', lat: 40.42698, lng: -86.921, coordSource: 'osm' },
 ];
