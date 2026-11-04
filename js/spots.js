@@ -110,6 +110,10 @@ const AT = {
   meredithSouth: { lat: 40.4256, lng: -86.92317, coordSource: 'osm' },
 };
 
+// Tag each building's coordinates with its key, so spots know which building they're in
+// (the wheel shows at most one spot per building).
+for (const [key, at] of Object.entries(AT)) at.building = key;
+
 export const SPOTS = [
   spot({
     id: 'walc', name: 'WALC', fullName: 'Wilmeth Active Learning Center', ...AT.walc,

@@ -2,7 +2,7 @@
 // Browser: open /tests.html.
 // Node: node --experimental-detect-module --input-type=module -e "import('./js/tests.js').then(m => m.runAndPrint())"
 import { SPOTS, DINING_COURTS, NOISE } from './spots.js';
-import { rankSpots, effectiveNoise, whyLine, who } from './scoring.js';
+import { rankSpots, effectiveNoise, whyLine, who, wheelPage } from './scoring.js';
 import { wheelShares, pickIndex, targetRotation, sliceAngles } from './wheel.js';
 import { walkMinutes } from './geo.js';
 import { classifyWeather } from './weather.js';
@@ -142,6 +142,18 @@ test('who(): one, two, several, everyone', () => {
   assert(who(['A', 'B'], 3) === 'A and B');
   assert(who(['A', 'B', 'C'], 4) === 'A, B and C');
   assert(who(['A', 'B'], 2) === 'everyone');
+});
+
+test('Wheel pages: one spot per building, and page 2 skips buildings from page 1', () => {
+  // Krach 2nd/4th tie, so both would land on a plain top 3.
+  const r = run({ players: [P('A', { stress: 'kinda' }), P('B', { noise: 'talk' })] });
+  for (const size of [3, 6]) {
+    const p1 = wheelPage(r.ranked, 0, size), p2 = wheelPage(r.ranked, 1, size);
+    const b1 = p1.map((e) => e.spot.building), b2 = p2.map((e) => e.spot.building);
+    assert(p1.length === size && new Set(b1).size === size, `page 1: ${b1}`);
+    assert(new Set(b2).size === b2.length && b2.every((b) => !b1.includes(b)), `page 2: ${b2} vs ${b1}`);
+  }
+  assert(SPOTS.every((s) => s.building), 'every spot has a building');
 });
 
 // --- Wild mode ------------------------------------------------------------

@@ -170,6 +170,27 @@ export function rankSpots({ players, spots, now, weather, origin, hasCar }) {
   return { ranked, removed };
 }
 
+/**
+ * The spots for wheel number `page` (0 = first wheel, 1 = after "None of these").
+ * Walks the ranking in order and allows at most one spot per building, so the
+ * slices are always different places. Later pages skip buildings shown earlier.
+ */
+export function wheelPage(ranked, page, size) {
+  const used = new Set();
+  let current = [];
+  for (let p = 0; p <= page; p++) {
+    current = [];
+    for (const e of ranked) {
+      if (current.length >= size) break;
+      const b = e.spot.building ?? e.spot.id;
+      if (used.has(b)) continue;
+      used.add(b);
+      current.push(e);
+    }
+  }
+  return current;
+}
+
 // ---------------------------------------------------------------------------
 // "Why" line: personal, uses names. e.g.
 //   "Celina can actually lock in, and there's coffee for Sam. It's 41° and

@@ -1,6 +1,6 @@
 // Screen state machine: start → hand-off → quiz → … → wheel → result.
 import { SPOTS, DINING_COURTS } from './spots.js';
-import { rankSpots, whyLine } from './scoring.js';
+import { rankSpots, whyLine, wheelPage } from './scoring.js';
 import { getLocation } from './geo.js';
 import { fetchWeather } from './weather.js';
 import { renderWeatherCard } from './weather-card.js';
@@ -46,7 +46,7 @@ const fresh = () => ({
   current: 0,            // player index
   q: 0,                  // question index
   ranked: [],
-  offset: 0,             // index of the first spot on the wheel
+  page: 0,               // 0 = first wheel, 1 = after "None of these"
   candidates: [],
   rerollUsed: false,
   now: null,
@@ -250,7 +250,7 @@ async function finishQuiz() {
     hasCar: state.hasCar,
   });
   state.ranked = ranked;
-  state.offset = 0;
+  state.page = 0;
   state.rerollUsed = false;
   showWheel();
 }
@@ -271,18 +271,18 @@ async function startWild() {
   if (!weather) weather = await weatherPromise;
   state.now = new Date();
   state.ranked = buildWildPool({ spots: SPOTS, now: state.now, origin: state.origin, hasCar: state.hasCar });
-  state.offset = 0;
+  state.page = 0;
   state.rerollUsed = false;
   showWheel();
 }
 
 function showWheel() {
   const wild = state.mode === 'wild';
-  state.candidates = state.ranked.slice(state.offset, state.offset + wheelSize());
+  state.candidates = wheelPage(state.ranked, state.page, wheelSize());
   const c = state.candidates;
 
   if (c.length === 0) {
-    $('none-text').textContent = state.offset === 0
+    $('none-text').textContent = state.page === 0
       ? 'No spots are available right now. Try WALC, which is 24/7 with a PUID swipe.'
       : 'There are no other open spots left to try.';
     show('screen-none');
@@ -298,8 +298,8 @@ function showWheel() {
   wheel = createWheel($('wheel'), labels, shares);
 
   $('wheel-title').textContent = wild
-    ? (state.offset === 0 ? 'The wild wheel 🎲' : 'Wild wheel, round 2 🎲')
-    : (state.offset === 0 ? `Your top ${c.length}` : `The next ${c.length}`);
+    ? (state.page === 0 ? 'The wild wheel 🎲' : 'Wild wheel, round 2 🎲')
+    : (state.page === 0 ? `Your top ${c.length}` : `The next ${c.length}`);
   $('wheel-sub').textContent = wild ? 'No quiz, no logic. Every slice has the same odds.' : 'Bigger slice = better fit for the group.';
   const legend = $('wheel-legend');
   legend.innerHTML = '';
@@ -378,7 +378,7 @@ function showResult(entry, note) {
   $('result-maps').href = mapsUrl(spot);
 
   // Reroll
-  const canNext = state.ranked.length > state.offset + wheelSize();
+  const canNext = wheelPage(state.ranked, state.page + 1, wheelSize()).length > 0;
   const canRespin = state.candidates.length >= 2;
   $('btn-respin').disabled = state.rerollUsed || !canRespin;
   $('btn-next3').disabled = state.rerollUsed || !canNext;
@@ -415,7 +415,7 @@ $('btn-respin').addEventListener('click', () => {
 $('btn-next3').addEventListener('click', () => {
   if (state.rerollUsed) return;
   state.rerollUsed = true;
-  state.offset += wheelSize();
+  state.page += 1;
   showWheel();
 });
 
