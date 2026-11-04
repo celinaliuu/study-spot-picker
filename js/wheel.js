@@ -113,17 +113,18 @@ export function createWheel(container, labels, shares) {
     path.setAttribute('class', 'wheel-slice');
     g.appendChild(path);
 
-    // Label runs along the radius, reading outward.
+    // Label runs along the radius; flipped on the left half so it's never upside down.
     const text = document.createElementNS(SVG_NS, 'text');
-    const [tx, ty] = pt(a.mid, R * 0.58);
+    const [tx, ty] = pt(a.mid, R * 0.55);
+    const angle = a.mid > 180 ? a.mid + 90 : a.mid - 90;
     text.setAttribute('x', tx);
     text.setAttribute('y', ty);
     text.setAttribute('class', 'wheel-label');
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('transform', `rotate(${a.mid - 90} ${tx} ${ty})`);
+    text.setAttribute('transform', `rotate(${angle} ${tx} ${ty})`);
     const label = labels[i];
-    text.textContent = label.length > 16 ? label.slice(0, 15) + '…' : label;
+    text.textContent = label.length > 15 ? label.slice(0, 14) + '…' : label;
     g.appendChild(text);
   });
 

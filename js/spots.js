@@ -78,6 +78,7 @@ export const HOURS = {
 // Spots
 //
 // Field guide:
+//   shortName    optional label for the wheel (keep ≤ 15 characters)
 //   noise        NOISE level (QUIET 0, CHILL 1, BUZZY 2, LOUD 3)
 //   noiseRules   time-of-day overrides: [{ fromHour, toHour, noise }]
 //                (window wraps past midnight when fromHour > toHour)
@@ -145,7 +146,7 @@ export const SPOTS = [
     mapsQuery: 'Beering Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'frieda', name: 'Frieda Parker Hall',
+    id: 'frieda', shortName: 'Frieda Parker', name: 'Frieda Parker Hall',
     lat: 40.4266, lng: -86.9240, coordConfidence: 'low',
     noise: NOISE.CHILL, goodFor: 'both', roomsOftenFull: true, groupSpace: true, comfy: true,
     timeRules: [{ fromHour: 22, toHour: 6, penalty: 3, why: 'common area lights go off after 10pm' }],
@@ -167,7 +168,7 @@ export const SPOTS = [
     mapsQuery: 'Honors College and Residences South, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'winifred', name: 'Winifred Parker Hall',
+    id: 'winifred', shortName: 'Winifred Parker', name: 'Winifred Parker Hall',
     lat: 40.4260, lng: -86.9240, coordConfidence: 'low',
     noise: NOISE.CHILL, goodFor: 'both', coffee: 1, oftenFull: 1, groupSpace: true,
     notes: 'Nice tables, market nearby.',
@@ -181,7 +182,7 @@ export const SPOTS = [
     mapsQuery: 'Hagle Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'uhall', name: 'University Hall',
+    id: 'uhall', shortName: 'University Hall', name: 'University Hall',
     lat: 40.4257, lng: -86.9151, coordConfidence: 'medium',
     noise: NOISE.QUIET, goodFor: 'solo', oftenFull: 2,
     mapsQuery: 'University Hall, Purdue University, West Lafayette, IN',
@@ -194,7 +195,7 @@ export const SPOTS = [
     mapsQuery: 'Purdue Memorial Union, West Lafayette, IN',
   }),
   spot({
-    id: 'rawls', name: 'Rawls / Krannert', fullName: 'Rawls Hall / Krannert (Parrish Library)',
+    id: 'rawls', shortName: 'Rawls/Krannert', name: 'Rawls / Krannert', fullName: 'Rawls Hall / Krannert (Parrish Library)',
     lat: 40.4236, lng: -86.9108, coordConfidence: 'medium',
     noise: NOISE.CHILL, goodFor: 'both',
     hours: HOURS.STEW, // Parrish Library: same as Stew
@@ -209,7 +210,7 @@ export const SPOTS = [
     mapsQuery: 'South Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'dsai', name: 'DSAI (2nd floor)', fullName: 'Hall of Data Science and AI',
+    id: 'dsai', shortName: 'DSAI', name: 'DSAI (2nd floor)', fullName: 'Hall of Data Science and AI',
     lat: 40.4290, lng: -86.9142, coordConfidence: 'low',
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
     notes: 'Clean, lock-in.',
@@ -223,7 +224,7 @@ export const SPOTS = [
     mapsQuery: 'Chaney-Hale Hall of Science, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'downtown', name: 'Downtown Lafayette', fullName: 'Downtown Lafayette (coffee shops / Tippecanoe library)',
+    id: 'downtown', shortName: 'Downtown', name: 'Downtown Lafayette', fullName: 'Downtown Lafayette (coffee shops / Tippecanoe library)',
     lat: 40.4170, lng: -86.8890, coordConfidence: 'medium', // ~Tippecanoe County Public Library
     noise: NOISE.BUZZY, goodFor: 'both', coffee: 2, requiresCar: true,
     notes: 'Car or long walk only.',
@@ -236,7 +237,7 @@ export const SPOTS = [
     mapsQuery: 'MSEE Building, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'burton-morgan', name: 'Burton Morgan', fullName: 'Burton D. Morgan Center for Entrepreneurship',
+    id: 'burton-morgan', shortName: 'Burton Morgan', name: 'Burton Morgan', fullName: 'Burton D. Morgan Center for Entrepreneurship',
     lat: 40.4223, lng: -86.9232, coordConfidence: 'low',
     noise: NOISE.QUIET, goodFor: 'solo', coffee: 1, coffeeDays: [1, 2, 3, 4, 5], lockIn: true,
     closedDays: [0, 6], // closed weekends
@@ -244,7 +245,7 @@ export const SPOTS = [
     mapsQuery: 'Burton D. Morgan Center for Entrepreneurship, West Lafayette, IN',
   }),
   spot({
-    id: 'meredith-south', name: 'Meredith South',
+    id: 'meredith-south', shortName: 'Meredith South', name: 'Meredith South',
     lat: 40.4248, lng: -86.9233, coordConfidence: 'low',
     noise: NOISE.CHILL, goodFor: 'both', comfy: true,
     notes: 'Nice dorm.',
