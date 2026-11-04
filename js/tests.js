@@ -6,6 +6,7 @@ import { minutesUntilClose } from './hours.js';
 import { rankSpots, effectiveNoise, whyLine } from './scoring.js';
 import { wheelShares, pickIndex, targetRotation, sliceAngles } from './wheel.js';
 import { walkMinutes } from './geo.js';
+import { classifyWeather } from './weather.js';
 
 // Mon 2 Nov 2026 + offset → a date on the given weekday (0 = Sun … 6 = Sat).
 const at = (weekday, h, m = 0) => new Date(2026, 10, 2 + ((weekday + 6) % 7), h, m);
@@ -125,6 +126,13 @@ test('Walking time Hillenbrand → Rawls is plausible (10–30 min)', () => {
 test('Bad weather adds a downtown penalty', () => {
   const r = run({ hasCar: true, weather: { category: 'bad', tempF: 35 } });
   assert(entry(r, 'downtown').mods.badWeatherDowntown < 0);
+});
+
+test('Weather classifier: drizzle/cold → bad, sunny 68° → nice, cloudy 50° → meh', () => {
+  assert(classifyWeather({ temperature_2m: 41, precipitation: 0.02, weather_code: 53 }).category === 'bad');
+  assert(classifyWeather({ temperature_2m: 35, precipitation: 0, weather_code: 0 }).category === 'bad');
+  assert(classifyWeather({ temperature_2m: 68, precipitation: 0, weather_code: 1 }).category === 'nice');
+  assert(classifyWeather({ temperature_2m: 50, precipitation: 0, weather_code: 3 }).category === 'meh');
 });
 
 // --- Why line -------------------------------------------------------------
