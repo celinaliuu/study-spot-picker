@@ -47,3 +47,11 @@ These are **guesses**. Click each map link and fix anything in `js/spots.js` tha
 | Materials and Electrical Engineering Building | spot | 40.4295, -86.9118 | medium | [map](https://www.google.com/maps?q=40.4295,-86.9118) |
 | Burton D. Morgan Center for Entrepreneurship | spot | 40.4223, -86.9232 | low | [map](https://www.google.com/maps?q=40.4223,-86.9232) |
 | Meredith South | spot | 40.4248, -86.9233 | low | [map](https://www.google.com/maps?q=40.4248,-86.9233) |
+
+## Tests
+
+Open `http://localhost:8000/tests.html`, or run them in Node:
+
+```sh
+node --no-warnings --experimental-detect-module --input-type=module -e "import('./js/tests.js').then(m => m.runAndPrint())"
+```

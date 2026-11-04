@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spot Picker Tests</title>
+  <style>
+    body { font: 15px/1.5 system-ui, sans-serif; margin: 16px; background: #fff; color: #111; }
+    li { margin: 4px 0; } .ok { color: #137333; } .fail { color: #c5221f; } small { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Scoring tests</h1>
+  <p id="summary">Running…</p>
+  <ul id="results"></ul>
+  <script type="module">
+    import { runTests } from './js/tests.js';
+    const results = runTests();
+    const ul = document.getElementById('results');
+    for (const r of results) {
+      const li = document.createElement('li');
+      li.className = r.ok ? 'ok' : 'fail';
+      li.textContent = `${r.ok ? '✓' : '✗'} ${r.name}`;
+      if (!r.ok) { const s = document.createElement('small'); s.textContent = ' → ' + r.error; li.append(s); }
+      ul.append(li);
+    }
+    const failed = results.filter((r) => !r.ok).length;
+    document.getElementById('summary').textContent = `${results.length - failed}/${results.length} passed`;
+  </script>
+</body>
+</html>
