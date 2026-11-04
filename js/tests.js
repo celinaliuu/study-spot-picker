@@ -2,7 +2,7 @@
 // Browser: open /tests.html.
 // Node: node --experimental-detect-module --input-type=module -e "import('./js/tests.js').then(m => m.runAndPrint())"
 import { SPOTS, DINING_COURTS, NOISE } from './spots.js';
-import { rankSpots, effectiveNoise, whyLine } from './scoring.js';
+import { rankSpots, effectiveNoise, whyLine, who } from './scoring.js';
 import { wheelShares, pickIndex, targetRotation, sliceAngles } from './wheel.js';
 import { walkMinutes } from './geo.js';
 import { classifyWeather } from './weather.js';
@@ -119,10 +119,16 @@ test('Weather classifier: drizzle/cold → bad, sunny 68° → nice, cloudy 50°
 });
 
 // --- Why line -------------------------------------------------------------
-test('Why line includes weather and ends with a period', () => {
-  const r = run({ players: [P('A', { stress: 'panic', noise: 'silence', coffee: 'yes' }), P('B', { coffee: 'yes' })] });
-  const s = whyLine(r.ranked[0], { category: 'bad', tempF: 41, phrase: 'drizzly' });
-  assert(s.includes("41° and drizzly") && s.endsWith('.'), s);
+test('Why line uses names and relates the weather to the walk', () => {
+  const r = run({ players: [P('Celina', { stress: 'panic', noise: 'silence', coffee: 'yes' }), P('Sam', { coffee: 'yes' })] });
+  const s = whyLine(r.ranked[0], { category: 'bad', tempF: 41, phrase: 'drizzly', kind: 'rain' });
+  assert(s.includes('Celina') && s.includes("41° and drizzly") && s.includes('☔'), s);
+});
+test('who(): one, two, several, everyone', () => {
+  assert(who(['A'], 3) === 'A');
+  assert(who(['A', 'B'], 3) === 'A and B');
+  assert(who(['A', 'B', 'C'], 4) === 'A, B and C');
+  assert(who(['A', 'B'], 2) === 'everyone');
 });
 
 // --- Wheel ----------------------------------------------------------------

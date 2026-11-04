@@ -3,6 +3,7 @@ import { SPOTS, DINING_COURTS } from './spots.js';
 import { rankSpots, whyLine } from './scoring.js';
 import { getLocation } from './geo.js';
 import { fetchWeather } from './weather.js';
+import { renderWeatherCard } from './weather-card.js';
 import { createWheel, wheelShares } from './wheel.js';
 
 const QUESTIONS = [
@@ -134,13 +135,7 @@ function initStart() {
 
   weatherPromise.then((w) => {
     weather = w;
-    const pill = $('weather-pill');
-    if (w.ok) {
-      const icon = w.category === 'bad' ? '🌧️' : w.category === 'nice' ? '☀️' : '⛅';
-      pill.textContent = `${icon} ${Math.round(w.tempF)}° and ${w.phrase} in West Lafayette`;
-    } else {
-      pill.textContent = 'Weather unavailable, so it won\'t factor in';
-    }
+    renderWeatherCard($('weather-card'), w);
   });
 }
 
@@ -320,6 +315,7 @@ function mapsUrl(spot) {
 function showResult(entry, note) {
   const { spot } = entry;
   $('result-name').textContent = spot.name;
+  $('result-vibe').textContent = spot.vibe;
   $('result-why').textContent = note ? `${note} ${whyLine(entry, weather?.ok ? weather : null, { hasCar: state.hasCar })}` : whyLine(entry, weather?.ok ? weather : null, { hasCar: state.hasCar });
 
   const facts = $('result-facts');
@@ -329,7 +325,6 @@ function showResult(entry, note) {
     fact(spot.requiresCar ? `~${entry.walkMin} min walk · short drive` : `~${entry.walkMin} min walk from ${state.origin.label}`);
   }
   for (const r of entry.activeRules) fact(`Heads up: ${r.why}`);
-  if (spot.notes) fact(spot.notes);
 
   const hu = $('result-heads-up');
   if (entry.miserableCount > 0) {

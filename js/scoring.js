@@ -172,60 +172,107 @@ export function rankSpots({ players, spots, now, weather, origin, hasCar }) {
 }
 
 // ---------------------------------------------------------------------------
-// "Why" line
+// "Why" line: personal, uses names. e.g.
+//   "Celina can actually lock in, and there's coffee for Sam. It's 41° and
+//    drizzly, but it's only a ~4 min walk. ☔"
 // ---------------------------------------------------------------------------
-const count = (per, key, vals) => per.filter((x) => vals.includes(x.answers[key])).length;
+const WEATHER_EMOJI = { sun: '☀️', moon: '🌙', partly: '⛅', cloud: '☁️', fog: '🌫️', rain: '☔', snow: '❄️', storm: '⛈️' };
+
+/** "Sam" / "Sam and Alex" / "Sam, Alex and Jo" / "everyone" */
+export function who(names, groupSize) {
+  if (names.length >= 2 && names.length === groupSize) return 'everyone';
+  if (names.length <= 1) return names[0] ?? '';
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
 
 /** Candidate reasons for one ranked entry, strongest first. */
-export function reasonsFor(entry, { now, hasCar } = {}) {
+export function reasonsFor(entry, { hasCar, weather } = {}) {
   const { spot, per, ctx, walkMin, miserableCount } = entry;
   const n = per.length;
   const out = [];
-  const add = (weight, text) => out.push({ weight, text });
+  const add = (weight, text, people = null) => out.push({ weight, text, people });
+  const pick = (key, vals) => per.filter((x) => vals.includes(x.answers[key])).map((x) => x.name);
 
-  const stressed = count(per, 'stress', ['kinda', 'panic']);
-  const panicking = count(per, 'stress', ['panic']);
-  const silence = count(per, 'noise', ['silence']);
-  const talkers = count(per, 'noise', ['talk']);
-  const coffeeFans = count(per, 'coffee', ['yes']);
-  const groupWork = count(per, 'work', ['psets', 'project']);
-  const tired = count(per, 'energy', ['tired']);
-  const late = count(per, 'length', ['few', 'late']);
+  const panicking = pick('stress', ['panic']);
+  const stressed = pick('stress', ['kinda', 'panic']);
+  const silence = pick('noise', ['silence']);
+  const talkers = pick('noise', ['talk']);
+  const coffeeFans = pick('coffee', ['yes']);
+  const tired = pick('energy', ['tired']);
+  const psets = pick('work', ['psets']);
+  const project = pick('work', ['project']);
+  const longHaul = pick('length', ['few', 'late']);
 
-  if (stressed && ctx.noise <= NOISE.CHILL) {
-    add(2 + stressed, ctx.noise === NOISE.QUIET ? 'quiet enough for the stressed people' : 'calm enough for the stressed people');
-  } else if (silence && ctx.noise === NOISE.QUIET) add(2 + silence, 'properly silent');
-  if (talkers && ctx.noise >= NOISE.BUZZY) add(2 + talkers, 'you can actually talk');
-  if (panicking && spot.lockIn) add(3, 'a real lock-in spot');
-  if (coffeeFans && ctx.coffee === 2) add(2 + coffeeFans, 'coffee right there');
-  else if (coffeeFans && ctx.coffee === 1) add(1 + coffeeFans, 'food and snacks nearby');
-  if (groupWork >= 2 && spot.groupSpace) add(2 + groupWork, n >= 4 ? `big tables for all ${n} of you` : 'room to work together');
-  if (tired && spot.comfy) add(1 + tired, 'comfy seats for the food coma');
-  if (late && spot.outlets === 'many') add(1 + late, 'plenty of outlets');
-  if (walkMin != null && walkMin <= 6 && !spot.requiresCar) add(3, `only ~${walkMin} min away`);
-  if (spot.requiresCar && hasCar) add(2, 'a change of scenery downtown');
-  if (miserableCount === 0 && n >= 3) add(1, 'nobody ends up miserable');
+  // Noise / stress
+  if (panicking.length && spot.lockIn) add(5 + panicking.length, `${who(panicking, n)} can actually lock in`, who(panicking, n));
+  else if (ctx.noise === NOISE.QUIET && (stressed.length || silence.length)) {
+    const quietFans = per.filter((x) => stressed.includes(x.name) || silence.includes(x.name)).map((x) => x.name);
+    add(4 + quietFans.length, `it's quiet enough for ${who(quietFans, n)} to focus`, who(quietFans, n));
+  } else if (stressed.length && ctx.noise === NOISE.CHILL) add(3 + stressed.length, `it's calm enough for ${who(stressed, n)}`, who(stressed, n));
+  if (talkers.length && ctx.noise >= NOISE.BUZZY) add(3 + talkers.length, `${who(talkers, n)} can talk without getting shushed`, who(talkers, n));
+  else if (talkers.length && ctx.noise === NOISE.CHILL) add(1 + talkers.length, `${who(talkers, n)} can still chat quietly`, who(talkers, n));
+
+  // Coffee
+  if (coffeeFans.length && ctx.coffee === 2) add(3 + coffeeFans.length, `there's coffee for ${who(coffeeFans, n)}`, who(coffeeFans, n));
+  else if (coffeeFans.length && ctx.coffee === 1) add(2 + coffeeFans.length, `${who(coffeeFans, n)} can grab snacks nearby`, who(coffeeFans, n));
+
+  // Group work
+  if (spot.groupSpace && n >= 4 && psets.length + project.length >= 2) add(4 + psets.length + project.length, `there are big tables for all ${n} of you`);
+  else if (spot.groupSpace && project.length >= 2) add(3 + project.length, "there's room to spread out for the group project");
+  else if (spot.goodFor !== 'solo' && psets.length >= 2) add(2 + psets.length, 'you can work through problem sets together');
+
+  // Energy / length
+  if (tired.length && spot.comfy) add(2 + tired.length, tired.length === 1 ? `there are comfy seats for ${tired[0]}'s food coma` : 'there are comfy seats for the food-coma crew');
+  if (longHaul.length && spot.outlets === 'many') add(1 + longHaul.length, 'there are outlets everywhere for the long haul');
+
+  // Distance (the weather sentence covers the walk when it's gross out)
+  if (walkMin != null && walkMin <= 6 && !spot.requiresCar && weather?.category !== 'bad') add(3, `it's only a ~${walkMin} min walk`);
+  if (spot.requiresCar && hasCar) add(2, 'you get a change of scenery downtown');
+  if (miserableCount === 0 && n >= 3) add(1, "nobody's going to be miserable");
+
+  // Low-weight fillers from the spot itself, so there are always two reasons.
+  if (spot.lockIn) add(0.5, "it's a proper lock-in spot");
+  if (spot.comfy) add(0.4, 'the seats are comfy');
+  if (spot.groupSpace) add(0.3, "there's space to spread out");
+  if (spot.outlets === 'many') add(0.2, 'there are outlets everywhere');
 
   out.sort((a, b) => b.weight - a.weight);
   return out;
 }
 
-export function weatherFragment(weather) {
+/** Weather sentence that relates the weather to the pick. */
+export function weatherSentence(weather, entry) {
   if (!weather || weather.tempF == null) return null;
   const t = Math.round(weather.tempF);
-  if (weather.category === 'nice') return `it's ${t}° and nice out`;
-  return `it's ${t}° and ${weather.phrase || 'meh'}`;
+  const emoji = WEATHER_EMOJI[weather.kind] ? ' ' + WEATHER_EMOJI[weather.kind] : '';
+  const walk = entry?.walkMin;
+  const close = walk != null && walk <= 8 && !entry.spot.requiresCar;
+  const base = `It's ${t}° and ${weather.phrase}`;
+  if (entry?.spot.requiresCar) return `${base}, but you've got a car.${emoji}`;
+  if (weather.category === 'bad') {
+    return close ? `${base}, but it's only a ~${walk} min walk.${emoji}` : `${base}, so bring an umbrella or a hood.${emoji}`;
+  }
+  if (weather.category === 'nice') return `${base}, so enjoy the walk.${emoji}`;
+  return `${base} out.${emoji}`;
 }
 
-/** e.g. "Quiet enough for the stressed people, coffee right there, and it's 41° and drizzly." */
-export function whyLine(entry, weather, opts) {
-  const parts = reasonsFor(entry, opts).slice(0, 2).map((r) => r.text);
-  const wx = weatherFragment(weather);
-  if (wx) parts.push(wx);
-  if (!parts.length) return 'The best fit for everyone right now.';
-  let s;
-  if (parts.length === 1) s = parts[0];
-  else if (parts.length === 2) s = `${parts[0]} and ${parts[1]}`;
-  else s = `${parts.slice(0, -1).join(', ')}, and ${parts[parts.length - 1]}`;
-  return s[0].toUpperCase() + s.slice(1) + '.';
+/** Two personal reasons + a weather sentence. */
+export function whyLine(entry, weather, opts = {}) {
+  // Drop duplicate wording, then take the top two.
+  const seen = new Set();
+  const top = reasonsFor(entry, { ...opts, weather }).filter((r) => !seen.has(r.text) && seen.add(r.text)).slice(0, 2);
+  const reasons = top.map((r) => r.text);
+  // Don't repeat the same names twice in one sentence.
+  if (top.length === 2 && top[0].people && top[0].people === top[1].people) {
+    const p = top[1].people;
+    reasons[1] = p === 'everyone' ? reasons[1].replace(/\beveryone\b/, 'the whole crew')
+      : reasons[1].startsWith(p) ? 'they' + reasons[1].slice(p.length)
+      : reasons[1].replace(p, 'them');
+  }
+  let s = reasons.length === 0 ? "It's the best balance for the group"
+    : reasons.length === 1 ? reasons[0]
+    : `${reasons[0]}, and ${reasons[1]}`;
+  s = s[0].toUpperCase() + s.slice(1) + '.';
+  const wx = weatherSentence(weather, entry);
+  return wx ? `${s} ${wx}` : s;
 }

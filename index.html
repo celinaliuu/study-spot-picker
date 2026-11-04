@@ -16,7 +16,9 @@
       <header class="hero">
         <h1>Where are we studying?</h1>
         <p class="sub">Pass the phone around, answer six taps each, and let the wheel decide.</p>
-        <p id="weather-pill" class="pill" aria-live="polite">Checking the weather…</p>
+        <div id="weather-card" class="weather-card" data-kind="loading" role="status" aria-live="polite">
+          <p class="w-blurb">Peeking outside… 👀</p>
+        </div>
       </header>
 
       <div class="card">
@@ -79,6 +81,7 @@
     <section id="screen-result" class="screen" hidden>
       <p class="kicker">You're going to</p>
       <h1 id="result-name" class="result-name" tabindex="-1"></h1>
+      <p id="result-vibe" class="vibe"></p>
       <p id="result-why" class="why"></p>
       <ul id="result-facts" class="facts"></ul>
       <p id="result-heads-up" class="heads-up" hidden></p>

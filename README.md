@@ -37,8 +37,7 @@ These are judgment calls where the spec was silent or ambiguous. All of them are
 
 ## Coordinates
 
-Building centers, mostly from OpenStreetMap building outlines (checked November 2026).
-**PMU is still an unverified guess.** Spot-check it, plus anything that looks off.
+Building centers from OpenStreetMap building outlines (checked November 2026) or checked by hand.
 
 | Place | Type | Lat, Lng | Source | Check |
 |---|---|---|---|---|
@@ -56,7 +55,7 @@ Building centers, mostly from OpenStreetMap building outlines (checked November 
 | Winifred Parker Hall | spot | 40.42785, -86.92033 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42785,-86.92033) |
 | Hagle Hall | spot | 40.42707, -86.91882 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42707,-86.91882) |
 | University Hall | spot | 40.42569, -86.91511 | you | [map](https://www.google.com/maps?q=40.42569,-86.91511) |
-| Purdue Memorial Union | spot | 40.42470, -86.91100 | **unverified guess** | [map](https://www.google.com/maps?q=40.4247,-86.911) |
+| Purdue Memorial Union | spot | 40.42470, -86.91100 | you | [map](https://www.google.com/maps?q=40.4247,-86.911) |
 | Rawls Hall / Krannert (Parrish Library) | spot | 40.42369, -86.90982 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42369,-86.90982) |
 | South Hall | spot | 40.42581, -86.92850 | you | [map](https://www.google.com/maps?q=40.42581,-86.9285) |
 | Hall of Data Science and AI | spot | 40.42900, -86.91419 | you | [map](https://www.google.com/maps?q=40.429,-86.91419) |
