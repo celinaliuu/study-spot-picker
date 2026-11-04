@@ -1,8 +1,7 @@
-// Scenario tests for hours, scoring and wheel math.
+// Scenario tests for scoring and wheel math.
 // Browser: open /tests.html.
 // Node: node --experimental-detect-module --input-type=module -e "import('./js/tests.js').then(m => m.runAndPrint())"
-import { SPOTS, DINING_COURTS, NOISE, HOURS } from './spots.js';
-import { minutesUntilClose } from './hours.js';
+import { SPOTS, DINING_COURTS, NOISE } from './spots.js';
 import { rankSpots, effectiveNoise, whyLine } from './scoring.js';
 import { wheelShares, pickIndex, targetRotation, sliceAngles } from './wheel.js';
 import { walkMinutes } from './geo.js';
@@ -44,28 +43,12 @@ test('Downtown needs a car', () => {
   assert(!ids(run({ hasCar: false })).includes('downtown'));
   assert(ids(run({ hasCar: true })).includes('downtown'));
 });
-test('Stew: Fri 4:30pm removed (closes 5pm), Fri 3pm kept', () => {
-  assert(!ids(run({ now: at(FRI, 16, 30) })).includes('stew'));
-  assert(ids(run({ now: at(FRI, 15) })).includes('stew'));
-});
-test('Stew: Sun 11pm kept, Sun 11:30pm removed, Mon 12:10am closed', () => {
-  assert(ids(run({ now: at(SUN, 23) })).includes('stew'));
-  assert(!ids(run({ now: at(SUN, 23, 30) })).includes('stew'));
-  assert(minutesUntilClose(byId.stew, at(MON, 0, 10)) === null);
-});
-test('Placeholder hours: Beering closes 11pm, closed at 2am', () => {
-  assert(minutesUntilClose(byId.beering, at(MON, 22)) === 60);
-  assert(!ids(run({ now: at(MON, 22, 30) })).includes('beering'));
-  assert(minutesUntilClose(byId.beering, at(MON, 2)) === null);
-});
-test('WALC is open at 3am', () => {
-  assert(minutesUntilClose(byId.walc, at(MON, 3)) === Infinity);
-  assert(ids(run({ now: at(MON, 3) })).includes('walc'));
-});
-test('Past-midnight window: Fri 8pm–2am is open Sat 1am', () => {
-  const s = { ...byId.beering, hours: { 5: [20 * 60, 26 * 60] } };
-  assert(minutesUntilClose(s, at(SAT, 1)) === 60);
-  assert(minutesUntilClose(s, at(SAT, 3)) === null);
+test('No opening-hours filter: every spot except Burton Morgan (weekend) / Downtown (no car) is kept at any hour', () => {
+  for (const [day, h, m] of [[MON, 3, 0], [FRI, 16, 30], [SUN, 23, 30], [SAT, 2, 0], [MON, 0, 10]]) {
+    const r = run({ now: at(day, h, m), hasCar: true });
+    const expected = SPOTS.length - (day === SAT || day === SUN ? 1 : 0);
+    assert(r.ranked.length === expected, `${day} ${h}:${m} → ${r.ranked.length}/${expected}; removed ${r.removed.map((x) => x.spot.id)}`);
+  }
 });
 
 // --- Time of day ----------------------------------------------------------

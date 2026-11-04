@@ -31,7 +31,6 @@ A web app that ends the "idk, where do you want to study?" debate. Friends finis
 - Each answer adds or subtracts points per spot based on its tags.
 - **Avoid misery over majority**: if any player would strongly dislike a spot (e.g. "panicking" + "silence please" vs. a loud spot), apply a big penalty. The goal is the fewest unhappy people, not the most votes.
 - **Hard filters** (remove the spot entirely):
-  - Closed now, or closing within ~45 min.
   - Burton Morgan on Saturday/Sunday.
   - Downtown Lafayette unless the group said they have a car / will walk far.
 - **Weather**: in rain, snow, or cold (< 40°F), penalize far spots and downtown. In nice weather, remove the distance penalty.
@@ -42,7 +41,7 @@ A web app that ends the "idk, where do you want to study?" debate. Friends finis
 - Groups of 4+ get a bonus for spots with group rooms or big tables.
 
 ## Spots
-Assume the group can get into every spot, dorms included. Hours marked `?` are unknown: use a placeholder close time of 11pm and make it easy to change.
+Assume the group can get into every spot, dorms included. Opening hours are **not** used for filtering or scoring (every spot is assumed open), except Burton Morgan, which is closed on weekends. The Hours column is reference only.
 
 | Spot | Noise | Good for | Coffee/food | Often full | Other | Hours |
 |---|---|---|---|---|---|---|
@@ -65,7 +64,7 @@ Assume the group can get into every spot, dorms included. Hours marked `?` are u
 | Burton Morgan (Entre) | quiet | solo | market (weekdays) | no | windows, lock-in; **closed weekends** | ? |
 | Meredith South | chill | both | — | no | nice dorm | ? |
 
-Library hours come from Purdue Libraries (2023) and may have changed. Re-check before finals.
+Library hours come from Purdue Libraries (2023) and may have changed.
 
 ### Distances
 Geolocation only works on HTTPS or localhost. That's fine for GitHub Pages and local testing, but don't open the file directly as file://. Give each spot approximate lat/lng coordinates, and each dining court too. Compute walking distance from them. Put all coordinates in the data file and **list them for me to verify on a map**, since guesses could be off.

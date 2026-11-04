@@ -1,7 +1,6 @@
 // Screen state machine: start → hand-off → quiz → … → wheel → result.
 import { SPOTS, DINING_COURTS } from './spots.js';
 import { rankSpots, whyLine } from './scoring.js';
-import { closingLabel } from './hours.js';
 import { getLocation } from './geo.js';
 import { fetchWeather } from './weather.js';
 import { createWheel, wheelShares } from './wheel.js';
@@ -255,7 +254,7 @@ function showWheel() {
 
   if (c.length === 0) {
     $('none-text').textContent = state.offset === 0
-      ? 'Every spot is closed or closing soon. WALC is 24/7 with a PUID swipe. Try that, or check back tomorrow.'
+      ? 'No spots are available right now. Try WALC, which is 24/7 with a PUID swipe.'
       : 'There are no other open spots left to try.';
     show('screen-none');
     return;
@@ -329,7 +328,6 @@ function showResult(entry, note) {
   if (entry.walkMin != null) {
     fact(spot.requiresCar ? `~${entry.walkMin} min walk · short drive` : `~${entry.walkMin} min walk from ${state.origin.label}`);
   }
-  fact(closingLabel(spot, state.now));
   for (const r of entry.activeRules) fact(`Heads up: ${r.why}`);
   if (spot.notes) fact(spot.notes);
 

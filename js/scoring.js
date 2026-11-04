@@ -1,13 +1,12 @@
 // Scoring engine. Pure functions, no DOM: rankSpots() is the entry point.
 //
 // Pipeline per spot:
-//   1. hard filters (closed / closing soon, closed days, needs a car)
+//   1. hard filters (closed days, needs a car)
 //   2. per-player utility from quiz answers
 //   3. misery check per player ("avoid misery over majority")
 //   4. group score = mean utility − misery penalty + group-level modifiers
 //   5. sort: fewest miserable players first, then highest score
 import { CONFIG, NOISE } from './spots.js';
-import { minutesUntilClose } from './hours.js';
 import { walkMinutes } from './geo.js';
 
 // Answer values used by the quiz (app.js) and here.
@@ -43,15 +42,12 @@ function coffeeToday(spot, date) {
 export function hardFilter(spot, { now, hasCar }) {
   if (spot.closedDays.includes(now.getDay())) return 'closed today';
   if (spot.requiresCar && !hasCar) return 'needs a car or a long walk';
-  const left = minutesUntilClose(spot, now);
-  if (left == null) return 'closed now';
-  if (left < CONFIG.CLOSING_BUFFER_MIN) return `closes in ${left} min`;
   return null;
 }
 
 /** One player's utility for one spot, plus whether they'd be miserable there. */
 export function playerUtility(answers, spot, ctx) {
-  const { noise, coffee, minsLeft } = ctx;
+  const { noise, coffee } = ctx;
   let u = 0;
 
   // --- Noise (scaled by stress) ---
@@ -82,9 +78,6 @@ export function playerUtility(answers, spot, ctx) {
   if (answers.length !== 'quick') {
     if (spot.outlets === 'many') u += 1;
     if (spot.outlets === 'few') u -= 1;
-  }
-  if (minsLeft !== Infinity && minsLeft < CONFIG.SESSION_MINUTES[answers.length]) {
-    u -= CONFIG.CLOSES_BEFORE_SESSION_END_PENALTY;
   }
 
   // --- Coffee ---
@@ -128,7 +121,6 @@ export function rankSpots({ players, spots, now, weather, origin, hasCar }) {
     const ctx = {
       noise: effectiveNoise(spot, now),
       coffee: coffeeToday(spot, now),
-      minsLeft: minutesUntilClose(spot, now),
     };
 
     const per = players.map((p) => ({ name: p.name, answers: p.answers, ...playerUtility(p.answers, spot, ctx) }));
@@ -209,8 +201,7 @@ export function reasonsFor(entry, { now, hasCar } = {}) {
   else if (coffeeFans && ctx.coffee === 1) add(1 + coffeeFans, 'food and snacks nearby');
   if (groupWork >= 2 && spot.groupSpace) add(2 + groupWork, n >= 4 ? `big tables for all ${n} of you` : 'room to work together');
   if (tired && spot.comfy) add(1 + tired, 'comfy seats for the food coma');
-  if (late && ctx.minsLeft === Infinity) add(1 + late, 'open all night');
-  else if (late && spot.outlets === 'many') add(1 + late, 'plenty of outlets');
+  if (late && spot.outlets === 'many') add(1 + late, 'plenty of outlets');
   if (walkMin != null && walkMin <= 6 && !spot.requiresCar) add(3, `only ~${walkMin} min away`);
   if (spot.requiresCar && hasCar) add(2, 'a change of scenery downtown');
   if (miserableCount === 0 && n >= 3) add(1, 'nobody ends up miserable');

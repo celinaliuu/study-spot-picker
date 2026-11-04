@@ -1,5 +1,5 @@
 // ============================================================================
-// spots.js: ALL editable data lives here. Tweak tags, hours, coordinates and
+// spots.js: ALL editable data lives here. Tweak tags, coordinates and
 // scoring weights without touching any logic.
 // ============================================================================
 
@@ -7,13 +7,6 @@
 // Tunable constants
 // ---------------------------------------------------------------------------
 export const CONFIG = {
-  // Hours for spots marked "?" in the spec. Minutes since midnight.
-  // The spec only gave a close time (11pm); the 7am open is an assumption.
-  PLACEHOLDER_HOURS: { open: 7 * 60, close: 23 * 60 },
-
-  // Hard filter: drop spots closing within this many minutes.
-  CLOSING_BUFFER_MIN: 45,
-
   // Weather lookup + geolocation sanity check center.
   WEST_LAFAYETTE: { lat: 40.4237, lng: -86.9212 },
   MAX_DISTANCE_FROM_CAMPUS_KM: 3, // GPS fix farther than this → ask for a dining court
@@ -37,10 +30,6 @@ export const CONFIG = {
   GROUP_SPACE_BONUS: 2,  // for groups of 4+
   GROUP_SPACE_MIN_PLAYERS: 4,
   OFTEN_FULL_BASE: 1,    // multiplied by oftenFull (0/1/2) and session/group factors
-  CLOSES_BEFORE_SESSION_END_PENALTY: 1.5, // per player, if the spot closes mid-session
-
-  // Session length in minutes for each "How long" answer.
-  SESSION_MINUTES: { quick: 60, few: 180, late: 300 },
 
   // Wheel slice share limits.
   WHEEL_MIN_SHARE: 0.15,
@@ -54,25 +43,6 @@ export const CONFIG = {
 
 // Noise scale used everywhere.
 export const NOISE = { QUIET: 0, CHILL: 1, BUZZY: 2, LOUD: 3 };
-
-// ---------------------------------------------------------------------------
-// Hours presets. Keys are JS Date#getDay() (0 = Sunday). Values are
-// [open, close] in minutes since midnight; close may exceed 1440 for
-// past-midnight closing (1440 = 12am).
-// Library hours from Purdue Libraries (2023). RE-CHECK BEFORE FINALS.
-// ---------------------------------------------------------------------------
-export const HOURS = {
-  ALWAYS: '24/7',
-  STEW: {
-    1: [8 * 60, 24 * 60], // Mon 8am–12am
-    2: [8 * 60, 24 * 60],
-    3: [8 * 60, 24 * 60],
-    4: [8 * 60, 24 * 60], // Thu
-    5: [8 * 60, 17 * 60], // Fri 8am–5pm
-    6: [13 * 60, 17 * 60], // Sat 1–5pm
-    0: [13 * 60, 24 * 60], // Sun 1pm–12am
-  },
-};
 
 // ---------------------------------------------------------------------------
 // Spots
@@ -94,7 +64,6 @@ export const HOURS = {
 //   lowPriority  flat penalty
 //   requiresCar  removed unless the group has a car / will walk far
 //   closedDays   days the spot is closed entirely
-//   hours        HOURS preset, or null → CONFIG.PLACEHOLDER_HOURS
 //   timeRules    [{ fromHour, toHour, penalty, why }] time-based penalties
 //   quirks       ['instruments'] → bad for "silence please"
 //   lat/lng      APPROXIMATE, verify on a map (see README)
@@ -113,7 +82,6 @@ const base = {
   lowPriority: false,
   requiresCar: false,
   closedDays: [],
-  hours: null,
   timeRules: [],
   quirks: [],
   notes: '',
@@ -128,14 +96,14 @@ export const SPOTS = [
     noise: NOISE.LOUD,
     noiseRules: [{ fromHour: 19, toHour: 6, noise: NOISE.QUIET }], // quiet after ~7pm
     goodFor: 'both', oftenFull: 2, groupSpace: true, outlets: 'many',
-    hours: HOURS.ALWAYS, notes: '24/7 with PUID swipe. Big, lots of outlets.',
+    notes: '24/7 with PUID swipe. Big, lots of outlets.',
     mapsQuery: 'Wilmeth Active Learning Center, West Lafayette, IN',
   }),
   spot({
     id: 'stew', name: 'Stewart Center library', shortName: 'Stew', fullName: 'Stewart Center (Hicks/Stew library)',
     lat: 40.4251, lng: -86.9128, coordConfidence: 'medium',
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
-    hours: HOURS.STEW, notes: 'Lock-in spot.',
+    notes: 'Lock-in spot.',
     mapsQuery: 'Stewart Center, Purdue University, West Lafayette, IN',
   }),
   spot({
@@ -198,7 +166,6 @@ export const SPOTS = [
     id: 'rawls', shortName: 'Rawls/Krannert', name: 'Rawls / Krannert', fullName: 'Rawls Hall / Krannert (Parrish Library)',
     lat: 40.4236, lng: -86.9108, coordConfidence: 'medium',
     noise: NOISE.CHILL, goodFor: 'both',
-    hours: HOURS.STEW, // Parrish Library: same as Stew
     notes: 'A bit far, seats alright.',
     mapsQuery: 'Rawls Hall, Purdue University, West Lafayette, IN',
   }),
