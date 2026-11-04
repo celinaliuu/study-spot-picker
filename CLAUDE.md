@@ -41,30 +41,36 @@ A web app that ends the "idk, where do you want to study?" debate. Friends finis
 - Groups of 4+ get a bonus for spots with group rooms or big tables.
 
 ## Spots
-Assume the group can get into every spot, dorms included. Opening hours are **not** used for filtering or scoring (every spot is assumed open), except Burton Morgan, which is closed on weekends. The Hours column is reference only.
+Assume the group can get into every spot, dorms included. Opening hours are **not** used for filtering or scoring (every spot is assumed open), except Burton Morgan, which is closed on weekends.
 
-| Spot | Noise | Good for | Coffee/food | Often full | Other | Hours |
-|---|---|---|---|---|---|---|
-| WALC | loud by day, quiet at night | both | — | yes | big, lots of outlets | 24/7 with PUID swipe |
-| Stewart Center library (Stew) | quiet | solo | — | no | lock-in | Mon–Thu 8am–12am, Fri 8am–5pm, Sat 1–5pm, Sun 1pm–12am |
-| Beering Hall | chill | both | — | no | few spots, but alright | ? |
-| Frieda Parker Hall | chill | both | — | study rooms often full | dorm, nice tables; common area lights off after 10pm | ? |
-| Honors North | quiet | solo | — | no | "Hogwarts library" lock-in; few outlets | ? |
-| Honors South | chill | both | — | no | comfy dorm, tables | ? |
-| Winifred Parker Hall | chill | both | market nearby | sometimes | nice tables | ? |
-| Hagle Hall | chill | both | — | yes | bands building, can hear instruments | ? |
-| University Hall | quiet | solo | — | yes | — | ? |
-| PMU | loud | group | market + food | no | nice tall tables | ? |
-| Rawls / Krannert | chill | both | — | no | a bit far; seats alright | Parrish Library: same as Stew |
-| South Hall | chill | group | connects to Hillenbrand Dining | no | new dorm, large conference rooms; farther west | ? |
-| DSAI (2nd floor) | quiet | solo | — | no | clean, lock-in | ? |
-| Chaney-Hale | chill | both | — | yes | labs, people coming and going; **low priority** | ? |
-| Downtown Lafayette (coffee shops / Tippecanoe library) | buzzy | both | coffee | no | car or long walk only | ? |
-| MSEE | chill | both | — | no | — | ? |
-| Burton Morgan (Entre) | quiet | solo | market (weekdays) | no | windows, lock-in; **closed weekends** | ? |
-| Meredith South | chill | both | — | no | nice dorm | ? |
+| Spot | Noise | Good for | Coffee/food | Often full | Other |
+|---|---|---|---|---|---|
+| WALC | loud and crowded by day, quieter at night | both | — | yes | big, lots of outlets; 24/7 with PUID swipe |
+| Stew library | quiet | solo | — | no | good lock-in |
+| Stew basement | quiet | solo | — | no | good lock-in |
+| Beering Hall | chill | both | — | no | few spots, but alright |
+| Frieda Parker common area | chill | both | — | no | dorm, nice tables; lights off after 10pm |
+| Frieda Parker study rooms | chill | both | — | yes | lit at night |
+| Honors North library ("Hogwarts") | quiet | solo | — | no | lock-in; few outlets |
+| Honors North (outside the library) | chatty | both | — | no | — |
+| Honors South lobby | buzzy | group | — | no | tables for large groups |
+| Honors South study lounge | chill | both | — | no | comfy dorm, tables |
+| Winifred Red Room | chill | both | market nearby | sometimes | nice tables |
+| Krach 4th floor | chill | both | — | no | can talk or lock in |
+| Krach 2nd floor | chill | both | — | no | can talk or lock in |
+| Hagle Hall | chill | both | — | yes | can hear instruments; more chill than lock-in |
+| University Hall | quiet | solo | — | yes | — |
+| PMU by Boiler Market | quieter | both | market + food | no | lock-in at tall tables |
+| PMU by Walk-On's | loud | group | food | no | tall tables, good for group study |
+| Rawls / Krannert | chill | both | — | no | a bit far; seats alright |
+| South Hall | chill | group | connects to Hillenbrand Dining | no | new dorm, large conference rooms; farther west |
+| DSAI (2nd floor) | quiet | solo | — | no | clean, lock-in |
+| Chaney-Hale | chill | both | — | yes | labs, people coming and going; **low priority** |
+| Downtown Lafayette (coffee shops / Tippecanoe library) | buzzy | both | coffee | no | car or long walk only |
+| MSEE | chill | both | — | no | — |
+| Burton Morgan (Entre) | quiet | solo | market (weekdays) | no | windows, lock-in; **closed weekends** |
+| Meredith South | chill | both | — | no | nice dorm |
 
-Library hours come from Purdue Libraries (2023) and may have changed.
 
 ### Distances
 Geolocation only works on HTTPS or localhost. That's fine for GitHub Pages and local testing, but don't open the file directly as file://. Give each spot approximate lat/lng coordinates, and each dining court too. Compute walking distance from them. Put all coordinates in the data file and **list them for me to verify on a map**, since guesses could be off.

@@ -60,17 +60,17 @@ test('WALC loud at 3pm, quiet at 9pm and 3am', () => {
 });
 test('Frieda gets the lights-off penalty after 10pm', () => {
   const r = run({ now: at(MON, 22, 10) });
-  assert(Object.keys(entry(r, 'frieda').mods).some((k) => k.startsWith('time:')));
-  assert(!Object.keys(entry(run(), 'frieda').mods).some((k) => k.startsWith('time:')));
+  assert(Object.keys(entry(r, 'frieda-common').mods).some((k) => k.startsWith('time:')));
+  assert(!Object.keys(entry(run(), 'frieda-common').mods).some((k) => k.startsWith('time:')));
 });
 
 // --- Misery ---------------------------------------------------------------
-test('Panicking + silence: PMU is miserable and ranks below every misery-free spot', () => {
+test('Panicking + silence: PMU by Walk-Ons is miserable and ranks below every misery-free spot', () => {
   const r = run({ players: [P('Panic', { stress: 'panic', noise: 'silence' }), P('Talky', { noise: 'talk' }), P('C')] });
-  const pmu = entry(r, 'pmu');
+  const pmu = entry(r, 'pmu-walkons');
   assert(pmu.miserableCount >= 1, 'PMU should make someone miserable');
   assert(pmu.miserableNames.includes('Panic'));
-  const pmuRank = ids(r).indexOf('pmu');
+  const pmuRank = ids(r).indexOf('pmu-walkons');
   const happyRanks = r.ranked.map((e, i) => (e.miserableCount === 0 ? i : -1)).filter((i) => i >= 0);
   assert(happyRanks.every((i) => i < pmuRank), 'all misery-free spots should rank above PMU');
 });
@@ -80,6 +80,18 @@ test('Misery beats majority: 3 talkers + 1 panicking-silence never get a loud sp
   });
   const top = r.ranked[0];
   assert(top.ctx.noise < NOISE.BUZZY, `top was ${top.spot.id}`);
+});
+
+test('Sub-spots: Stew basement shares Stew coordinates; Frieda rooms skip the lights-off rule', () => {
+  const stew = byId.stew, base = byId['stew-basement'];
+  assert(stew.lat === base.lat && stew.lng === base.lng);
+  const r = run({ now: at(MON, 23) });
+  assert(!Object.keys(entry(r, 'frieda-rooms').mods).some((k) => k.startsWith('time:')), 'rooms stay lit');
+  assert(Object.keys(entry(r, 'frieda-common').mods).some((k) => k.startsWith('time:')), 'common area goes dark');
+});
+test('Silence + panic prefers PMU by Boiler Market over PMU by Walk-Ons', () => {
+  const r = run({ players: [P('A', { stress: 'panic', noise: 'silence' }), P('B')] });
+  assert(ids(r).indexOf('pmu-market') < ids(r).indexOf('pmu-walkons'));
 });
 
 // --- Group work -----------------------------------------------------------

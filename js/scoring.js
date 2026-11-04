@@ -66,7 +66,6 @@ export function playerUtility(answers, spot, ctx) {
     u += g === 'group' ? 3 : g === 'both' ? 1 : -4;
     if (spot.groupSpace) u += 1;
   }
-  if ((answers.work === 'psets' || answers.work === 'project') && spot.roomsOftenFull) u -= 1;
 
   // --- Energy ---
   if (answers.energy === 'tired') {

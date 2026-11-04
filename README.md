@@ -47,7 +47,7 @@ These are judgment calls where the spec was silent or ambiguous. All of them are
 
 ## Coordinates
 
-Building centers from OpenStreetMap building outlines (checked November 2026) or checked by hand.
+Building centers from OpenStreetMap building outlines (checked November 2026) or checked by hand. Spots inside the same building (e.g. Stew and Stew basement) share coordinates through `AT` in `js/spots.js`.
 
 | Place | Type | Lat, Lng | Source | Check |
 |---|---|---|---|---|
@@ -57,19 +57,26 @@ Building centers from OpenStreetMap building outlines (checked November 2026) or
 | Wiley | dining court | 40.42854, -86.92077 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42854,-86.92077) |
 | Windsor | dining court | 40.42698, -86.92100 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42698,-86.921) |
 | Wilmeth Active Learning Center | spot | 40.42738, -86.91323 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42738,-86.91323) |
-| Stewart Center (Hicks/Stew library) | spot | 40.42506, -86.91274 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42506,-86.91274) |
+| Stewart Center library | spot | 40.42506, -86.91274 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42506,-86.91274) |
+| Stew basement | spot | 40.42506, -86.91274 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42506,-86.91274) |
 | Beering Hall | spot | 40.42557, -86.91608 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42557,-86.91608) |
-| Frieda Parker Hall | spot | 40.42828, -86.91965 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42828,-86.91965) |
-| Honors North | spot | 40.42678, -86.91974 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42678,-86.91974) |
-| Honors South | spot | 40.42578, -86.91949 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42578,-86.91949) |
-| Winifred Parker Hall | spot | 40.42785, -86.92033 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42785,-86.92033) |
+| Frieda Parker common area | spot | 40.42828, -86.91965 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42828,-86.91965) |
+| Frieda Parker study rooms | spot | 40.42828, -86.91965 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42828,-86.91965) |
+| Honors North "Hogwarts" library | spot | 40.42678, -86.91974 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42678,-86.91974) |
+| Honors North (outside the library) | spot | 40.42678, -86.91974 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42678,-86.91974) |
+| Honors South lobby | spot | 40.42578, -86.91949 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42578,-86.91949) |
+| Honors South study lounge | spot | 40.42578, -86.91949 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42578,-86.91949) |
+| Winifred Parker Hall Red Room | spot | 40.42785, -86.92033 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42785,-86.92033) |
+| Krach Leadership Center, 4th floor | spot | 40.42761, -86.92123 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42761,-86.92123) |
+| Krach Leadership Center, 2nd floor | spot | 40.42761, -86.92123 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42761,-86.92123) |
 | Hagle Hall | spot | 40.42707, -86.91882 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42707,-86.91882) |
 | University Hall | spot | 40.42569, -86.91511 | you | [map](https://www.google.com/maps?q=40.42569,-86.91511) |
-| Purdue Memorial Union | spot | 40.42470, -86.91100 | you | [map](https://www.google.com/maps?q=40.4247,-86.911) |
-| Rawls Hall / Krannert (Parrish Library) | spot | 40.42369, -86.90982 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42369,-86.90982) |
+| PMU by Boiler Market | spot | 40.42470, -86.91100 | you | [map](https://www.google.com/maps?q=40.4247,-86.911) |
+| PMU by Walk-On's | spot | 40.42470, -86.91100 | you | [map](https://www.google.com/maps?q=40.4247,-86.911) |
+| Rawls Hall / Krannert | spot | 40.42369, -86.90982 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42369,-86.90982) |
 | South Hall | spot | 40.42581, -86.92850 | you | [map](https://www.google.com/maps?q=40.42581,-86.9285) |
-| Hall of Data Science and AI | spot | 40.42900, -86.91419 | you | [map](https://www.google.com/maps?q=40.429,-86.91419) |
-| Chaney-Hale | spot | 40.42859, -86.91552 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42859,-86.91552) |
+| Hall of Data Science and AI, 2nd floor | spot | 40.42900, -86.91419 | you | [map](https://www.google.com/maps?q=40.429,-86.91419) |
+| Chaney-Hale Hall of Science | spot | 40.42859, -86.91552 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42859,-86.91552) |
 | Downtown Lafayette (coffee shops / Tippecanoe library) | spot | 40.41687, -86.88931 | OpenStreetMap | [map](https://www.google.com/maps?q=40.41687,-86.88931) |
 | Materials and Electrical Engineering Building | spot | 40.42934, -86.91267 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42934,-86.91267) |
 | Burton D. Morgan Center for Entrepreneurship | spot | 40.42375, -86.92285 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42375,-86.92285) |

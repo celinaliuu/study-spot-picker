@@ -56,7 +56,6 @@ export const NOISE = { QUIET: 0, CHILL: 1, BUZZY: 2, LOUD: 3 };
 //   coffee       0 none, 1 market/food nearby, 2 coffee on site
 //   coffeeDays   days the coffee/market counts (null = every day)
 //   oftenFull    0 no, 1 sometimes, 2 yes
-//   roomsOftenFull  study rooms are often taken (matters only for group work)
 //   groupSpace   group rooms / big tables → bonus for groups of 4+
 //   lockIn       focused, library-style vibe (stressed people like it)
 //   comfy        cozy dorm-style seating (food-coma people like it)
@@ -66,15 +65,13 @@ export const NOISE = { QUIET: 0, CHILL: 1, BUZZY: 2, LOUD: 3 };
 //   closedDays   days the spot is closed entirely
 //   timeRules    [{ fromHour, toHour, penalty, why }] time-based penalties
 //   quirks       ['instruments'] → bad for "silence please"
-//   lat/lng      building center
-//   coordSource  'osm' (OpenStreetMap building outline) | 'you' (checked by hand) | 'guess' (unverified)
+//   lat/lng/coordSource  from AT (below): spots in the same building share coordinates
 // ---------------------------------------------------------------------------
 const base = {
   noiseRules: [],
   coffee: 0,
   coffeeDays: null,
   oftenFull: 0,
-  roomsOftenFull: false,
   groupSpace: false,
   lockIn: false,
   comfy: false,
@@ -89,135 +86,197 @@ const base = {
 
 const spot = (s) => ({ ...base, ...s });
 
+// Building coordinates, shared by every spot inside that building.
+// coordSource: 'osm' (OpenStreetMap building outline) | 'you' (checked by hand)
+const AT = {
+  walc: { lat: 40.42738, lng: -86.91323, coordSource: 'osm' },
+  stew: { lat: 40.42506, lng: -86.91274, coordSource: 'osm' },
+  beering: { lat: 40.42557, lng: -86.91608, coordSource: 'osm' },
+  frieda: { lat: 40.42828, lng: -86.91965, coordSource: 'osm' },
+  honorsNorth: { lat: 40.42678, lng: -86.91974, coordSource: 'osm' },
+  honorsSouth: { lat: 40.42578, lng: -86.91949, coordSource: 'osm' },
+  winifred: { lat: 40.42785, lng: -86.92033, coordSource: 'osm' },
+  krach: { lat: 40.42761, lng: -86.92123, coordSource: 'osm' },
+  hagle: { lat: 40.42707, lng: -86.91882, coordSource: 'osm' },
+  uhall: { lat: 40.42569, lng: -86.91511, coordSource: 'you' },
+  pmu: { lat: 40.4247, lng: -86.911, coordSource: 'you' },
+  rawls: { lat: 40.42369, lng: -86.90982, coordSource: 'osm' },
+  southHall: { lat: 40.42581, lng: -86.9285, coordSource: 'you' },
+  dsai: { lat: 40.429, lng: -86.91419, coordSource: 'you' },
+  chaneyHale: { lat: 40.42859, lng: -86.91552, coordSource: 'osm' },
+  downtown: { lat: 40.41687, lng: -86.88931, coordSource: 'osm' }, // ~Tippecanoe County Public Library
+  msee: { lat: 40.42934, lng: -86.91267, coordSource: 'osm' },
+  burtonMorgan: { lat: 40.42375, lng: -86.92285, coordSource: 'osm' },
+  meredithSouth: { lat: 40.4256, lng: -86.92317, coordSource: 'osm' },
+};
+
 export const SPOTS = [
   spot({
-    id: 'walc', name: 'WALC', fullName: 'Wilmeth Active Learning Center',
-    lat: 40.42738, lng: -86.91323, coordSource: 'osm',
+    id: 'walc', name: 'WALC', fullName: 'Wilmeth Active Learning Center', ...AT.walc,
     noise: NOISE.LOUD,
     noiseRules: [{ fromHour: 19, toHour: 6, noise: NOISE.QUIET }], // quiet after ~7pm
     goodFor: 'both', oftenFull: 2, groupSpace: true, outlets: 'many',
-    vibe: "Huge, bright, outlets everywhere. Buzzing by day, library-quiet after 7pm.",
+    vibe: 'Huge, bright, outlets everywhere. Crowded and loud by day, library-quiet after 7pm.',
     mapsQuery: 'Wilmeth Active Learning Center, West Lafayette, IN',
   }),
+
+  // --- Stewart Center ---
   spot({
-    id: 'stew', name: 'Stewart Center library', shortName: 'Stew', fullName: 'Stewart Center (Hicks/Stew library)',
-    lat: 40.42506, lng: -86.91274, coordSource: 'osm',
+    id: 'stew', name: 'Stew library', shortName: 'Stew', fullName: 'Stewart Center library', ...AT.stew,
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
-    vibe: "Old-school library lock-in. Phones down, heads down.",
+    vibe: 'Old-school library lock-in. Phones down, heads down.',
     mapsQuery: 'Stewart Center, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'beering', name: 'Beering Hall',
-    lat: 40.42557, lng: -86.91608, coordSource: 'osm',
+    id: 'stew-basement', name: 'Stew basement', ...AT.stew,
+    noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
+    vibe: 'Down in the basement, where the real lock-ins happen. 🔒',
+    mapsQuery: 'Stewart Center, Purdue University, West Lafayette, IN',
+  }),
+
+  spot({
+    id: 'beering', name: 'Beering Hall', ...AT.beering,
     noise: NOISE.CHILL, goodFor: 'both',
-    vibe: "Low-key tables tucked in the halls. Not many seats, but it gets the job done.",
+    vibe: 'Low-key tables tucked in the halls. Not many seats, but it gets the job done.',
     mapsQuery: 'Beering Hall, Purdue University, West Lafayette, IN',
   }),
+
+  // --- Frieda Parker Hall ---
   spot({
-    id: 'frieda', shortName: 'Frieda Parker', name: 'Frieda Parker Hall',
-    lat: 40.42828, lng: -86.91965, coordSource: 'osm',
-    noise: NOISE.CHILL, goodFor: 'both', roomsOftenFull: true, groupSpace: true, comfy: true,
-    timeRules: [{ fromHour: 22, toHour: 6, penalty: 3, why: 'common area lights go off after 10pm' }],
-    vibe: "Cozy dorm with nice tables. Study rooms go fast, and the lights go off around 10.",
+    id: 'frieda-common', name: 'Frieda Parker common area', shortName: 'Frieda commons', ...AT.frieda,
+    noise: NOISE.CHILL, goodFor: 'both', groupSpace: true, comfy: true,
+    timeRules: [{ fromHour: 22, toHour: 6, penalty: 3, why: 'the common area lights go off after 10pm' }],
+    vibe: 'Cozy dorm common area with nice tables, until the lights go off at 10.',
     mapsQuery: 'Frieda Parker Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'honors-north', name: 'Honors North',
-    lat: 40.42678, lng: -86.91974, coordSource: 'osm',
+    id: 'frieda-rooms', name: 'Frieda Parker study rooms', shortName: 'Frieda rooms', ...AT.frieda,
+    noise: NOISE.CHILL, goodFor: 'both', oftenFull: 2, groupSpace: true,
+    vibe: 'Your own little room, lights on all night. Grab one if you can, they go fast.',
+    mapsQuery: 'Frieda Parker Hall, Purdue University, West Lafayette, IN',
+  }),
+
+  // --- Honors College and Residences ---
+  spot({
+    id: 'honors-north-library', name: 'Honors North library', shortName: 'Hogwarts lib', fullName: 'Honors North "Hogwarts" library', ...AT.honorsNorth,
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true, outlets: 'few',
-    vibe: "Hogwarts-library energy. Bring a charged laptop, outlets are rare.",
+    vibe: 'The Hogwarts library. Silent, gorgeous, and very lock-in. Bring a charged laptop. 🪄',
     mapsQuery: 'Honors College and Residences North, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'honors-south', name: 'Honors South',
-    lat: 40.42578, lng: -86.91949, coordSource: 'osm',
-    noise: NOISE.CHILL, goodFor: 'both', comfy: true, groupSpace: true,
-    vibe: "Comfy dorm vibes with plenty of tables to spread out.",
+    id: 'honors-north', name: 'Honors North (outside the library)', shortName: 'Honors North', ...AT.honorsNorth,
+    noise: NOISE.BUZZY, goodFor: 'both',
+    vibe: 'The rest of Honors North: chattier, and you can actually talk.',
+    mapsQuery: 'Honors College and Residences North, Purdue University, West Lafayette, IN',
+  }),
+  spot({
+    id: 'honors-south-lobby', name: 'Honors South lobby', shortName: 'Honors S lobby', ...AT.honorsSouth,
+    noise: NOISE.BUZZY, goodFor: 'group', groupSpace: true,
+    vibe: 'Big lobby tables that fit the whole crew.',
     mapsQuery: 'Honors College and Residences South, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'winifred', shortName: 'Winifred Parker', name: 'Winifred Parker Hall',
-    lat: 40.42785, lng: -86.92033, coordSource: 'osm',
+    id: 'honors-south-lounge', name: 'Honors South study lounge', shortName: 'Honors S lounge', ...AT.honorsSouth,
+    noise: NOISE.CHILL, goodFor: 'both', comfy: true,
+    vibe: 'Comfy dorm study lounge with tables.',
+    mapsQuery: 'Honors College and Residences South, Purdue University, West Lafayette, IN',
+  }),
+
+  spot({
+    id: 'winifred-red-room', name: 'Winifred Red Room', shortName: 'Red Room', fullName: 'Winifred Parker Hall Red Room', ...AT.winifred,
     noise: NOISE.CHILL, goodFor: 'both', coffee: 1, oftenFull: 1, groupSpace: true,
-    vibe: "Nice tables, and a market close by for snack runs.",
+    vibe: 'Nice tables in the Red Room, with the market right there for snack runs. ❤️',
     mapsQuery: 'Winifred Parker Hall, Purdue University, West Lafayette, IN',
   }),
+
+  // --- Krach Leadership Center ---
   spot({
-    id: 'hagle', name: 'Hagle Hall',
-    lat: 40.42707, lng: -86.91882, coordSource: 'osm',
+    id: 'krach-4', name: 'Krach 4th floor', shortName: 'Krach 4th', fullName: 'Krach Leadership Center, 4th floor', ...AT.krach,
+    noise: NOISE.CHILL, goodFor: 'both', lockIn: true,
+    vibe: 'Solid study floor. Talk it out or lock in, both work.',
+    mapsQuery: 'Krach Leadership Center, Purdue University, West Lafayette, IN',
+  }),
+  spot({
+    id: 'krach-2', name: 'Krach 2nd floor', shortName: 'Krach 2nd', fullName: 'Krach Leadership Center, 2nd floor', ...AT.krach,
+    noise: NOISE.CHILL, goodFor: 'both', lockIn: true,
+    vibe: 'Solid study floor. Talk it out or lock in, both work.',
+    mapsQuery: 'Krach Leadership Center, Purdue University, West Lafayette, IN',
+  }),
+
+  spot({
+    id: 'hagle', name: 'Hagle Hall', ...AT.hagle,
     noise: NOISE.CHILL, goodFor: 'both', oftenFull: 2, quirks: ['instruments'],
-    vibe: "Pretty building with a live band soundtrack. 🎺",
+    vibe: 'More chill than lock-in, with a live band-practice soundtrack. 🎺',
     mapsQuery: 'Hagle Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'uhall', shortName: 'University Hall', name: 'University Hall',
-    lat: 40.42569, lng: -86.91511, coordSource: 'you',
+    id: 'uhall', name: 'University Hall', ...AT.uhall,
     noise: NOISE.QUIET, goodFor: 'solo', oftenFull: 2,
-    vibe: "Classic, quiet, and old-school. Grab a seat if you can find one.",
+    vibe: 'Classic and pretty quiet. Grab a seat if you can find one.',
     mapsQuery: 'University Hall, Purdue University, West Lafayette, IN',
   }),
+
+  // --- Purdue Memorial Union ---
   spot({
-    id: 'pmu', name: 'PMU', fullName: 'Purdue Memorial Union',
-    lat: 40.4247, lng: -86.911, coordSource: 'you',
-    noise: NOISE.LOUD, goodFor: 'group', coffee: 2, groupSpace: true,
-    vibe: "The campus living room: food, coffee, tall tables, lots of chatter.",
+    id: 'pmu-market', name: 'PMU by Boiler Market', shortName: 'PMU market', ...AT.pmu,
+    noise: NOISE.CHILL, goodFor: 'both', coffee: 2, lockIn: true, groupSpace: true,
+    vibe: 'The quieter side of PMU: tall tables, lock-in mode, and Boiler Market for snacks.',
     mapsQuery: 'Purdue Memorial Union, West Lafayette, IN',
   }),
   spot({
-    id: 'rawls', shortName: 'Rawls/Krannert', name: 'Rawls / Krannert', fullName: 'Rawls Hall / Krannert (Parrish Library)',
-    lat: 40.42369, lng: -86.90982, coordSource: 'osm',
+    id: 'pmu-walkons', name: "PMU by Walk-On's", shortName: "PMU Walk-On's", ...AT.pmu,
+    noise: NOISE.LOUD, goodFor: 'group', coffee: 2, groupSpace: true,
+    vibe: 'Noisy, but the tall tables are great for working as a group.',
+    mapsQuery: 'Purdue Memorial Union, West Lafayette, IN',
+  }),
+
+  spot({
+    id: 'rawls', name: 'Rawls / Krannert', shortName: 'Rawls/Krannert', fullName: 'Rawls Hall / Krannert', ...AT.rawls,
     noise: NOISE.CHILL, goodFor: 'both',
-    vibe: "Business-school calm with decent seats. A bit of a trek.",
+    vibe: 'A little farther than usual, but the seats are alright.',
     mapsQuery: 'Rawls Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'south-hall', name: 'South Hall',
-    lat: 40.42581, lng: -86.9285, coordSource: 'you',
+    id: 'south-hall', name: 'South Hall', ...AT.southHall,
     noise: NOISE.CHILL, goodFor: 'group', coffee: 1, groupSpace: true, comfy: true,
-    vibe: "Shiny new dorm with big conference rooms, attached to Hillenbrand.",
+    vibe: 'Shiny new dorm with big conference rooms, a bit out west by Hillenbrand.',
     mapsQuery: 'South Hall, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'dsai', shortName: 'DSAI', name: 'DSAI (2nd floor)', fullName: 'Hall of Data Science and AI',
-    lat: 40.429, lng: -86.91419, coordSource: 'you',
+    id: 'dsai', name: 'DSAI (2nd floor)', shortName: 'DSAI', fullName: 'Hall of Data Science and AI, 2nd floor', ...AT.dsai,
     noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
-    vibe: "Clean, modern, and seriously lock-in. Head up to the 2nd floor.",
+    vibe: 'Quiet, clean, and seriously lock-in. Head up to the 2nd floor.',
     mapsQuery: 'Hall of Data Science and AI, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'chaney-hale', name: 'Chaney-Hale',
-    lat: 40.42859, lng: -86.91552, coordSource: 'osm',
+    id: 'chaney-hale', name: 'Chaney-Hale', fullName: 'Chaney-Hale Hall of Science', ...AT.chaneyHale,
     noise: NOISE.CHILL, goodFor: 'both', oftenFull: 2, lowPriority: true,
-    vibe: "Science-building bustle, with labs and people coming and going.",
+    vibe: 'Busy science building, with people heading to labs all the time.',
     mapsQuery: 'Chaney-Hale Hall of Science, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'downtown', shortName: 'Downtown', name: 'Downtown Lafayette', fullName: 'Downtown Lafayette (coffee shops / Tippecanoe library)',
-    lat: 40.41687, lng: -86.88931, coordSource: 'osm', // ~Tippecanoe County Public Library
+    id: 'downtown', name: 'Downtown Lafayette', shortName: 'Downtown', fullName: 'Downtown Lafayette (coffee shops / Tippecanoe library)', ...AT.downtown,
     noise: NOISE.BUZZY, goodFor: 'both', coffee: 2, requiresCar: true,
-    vibe: "Coffee shop hopping off campus. A real change of scenery.",
+    vibe: 'Coffee shops or the Tippecanoe library downtown. A real change of scenery.',
     mapsQuery: 'coffee shops downtown Lafayette, IN',
   }),
   spot({
-    id: 'msee', name: 'MSEE', fullName: 'Materials and Electrical Engineering Building',
-    lat: 40.42934, lng: -86.91267, coordSource: 'osm',
+    id: 'msee', name: 'MSEE', fullName: 'Materials and Electrical Engineering Building', ...AT.msee,
     noise: NOISE.CHILL, goodFor: 'both',
-    vibe: "Engineering-building chill. Usually has room.",
+    vibe: 'Chill engineering-building study area.',
     mapsQuery: 'MSEE Building, Purdue University, West Lafayette, IN',
   }),
   spot({
-    id: 'burton-morgan', shortName: 'Burton Morgan', name: 'Burton Morgan', fullName: 'Burton D. Morgan Center for Entrepreneurship',
-    lat: 40.42375, lng: -86.92285, coordSource: 'osm',
+    id: 'burton-morgan', name: 'Burton Morgan', fullName: 'Burton D. Morgan Center for Entrepreneurship', ...AT.burtonMorgan,
     noise: NOISE.QUIET, goodFor: 'solo', coffee: 1, coffeeDays: [1, 2, 3, 4, 5], lockIn: true,
     closedDays: [0, 6], // closed weekends
-    vibe: "Big windows, quiet focus, and a market on weekdays.",
+    vibe: 'Quiet lock-in with big windows, and a market on weekdays.',
     mapsQuery: 'Burton D. Morgan Center for Entrepreneurship, West Lafayette, IN',
   }),
   spot({
-    id: 'meredith-south', shortName: 'Meredith South', name: 'Meredith South',
-    lat: 40.4256, lng: -86.92317, coordSource: 'osm',
+    id: 'meredith-south', name: 'Meredith South', ...AT.meredithSouth,
     noise: NOISE.CHILL, goodFor: 'both', comfy: true,
-    vibe: "Calm, comfy dorm study spaces.",
+    vibe: 'Nice, calm dorm study spaces.',
     mapsQuery: 'Meredith South Hall, Purdue University, West Lafayette, IN',
   }),
 ];
