@@ -15,11 +15,19 @@
     <section id="screen-start" class="screen">
       <header class="hero">
         <h1>Where are we studying?</h1>
-        <p class="sub">Pass the phone around, answer six taps each, and let the wheel decide.</p>
+        <p id="hero-sub" class="sub">Pass the phone around, answer six taps each, and let the wheel decide.</p>
         <div id="weather-card" class="weather-card" data-kind="loading" role="status" aria-live="polite">
           <p class="w-blurb">Peeking outside… 👀</p>
         </div>
       </header>
+
+      <div class="card">
+        <h2>How should we pick?</h2>
+        <div id="mode-options" class="chips chips-two mode-chips" role="radiogroup" aria-label="Mode">
+          <button type="button" class="chip" role="radio" data-value="quiz" aria-checked="true">🎯 Fit the group<small>Quick quiz, best 3 spots</small></button>
+          <button type="button" class="chip" role="radio" data-value="wild" aria-checked="false">🎲 Wild<small>No quiz, 6 random spots</small></button>
+        </div>
+      </div>
 
       <div class="card">
         <h2>Where are you now?</h2>
@@ -29,7 +37,7 @@
         <div id="court-options" class="chips" role="radiogroup" aria-label="Dining court"></div>
       </div>
 
-      <div class="card">
+      <div class="card" id="players-card">
         <h2>How many of you?</h2>
         <div id="player-options" class="chips chips-numbers" role="radiogroup" aria-label="Number of players"></div>
       </div>

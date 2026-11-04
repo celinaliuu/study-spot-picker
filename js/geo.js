@@ -20,39 +20,56 @@ export function walkMinutes(from, to) {
   return Math.max(1, Math.round((km / CONFIG.WALK_SPEED_KMH) * 60));
 }
 
+function locateOnce(opts) {
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ pos }),
+      (err) => resolve({ err }),
+      opts,
+    );
+  });
+}
+
+const PICK = 'Or just pick your dining court below.';
+
 /**
  * Ask the browser for the current position.
  * Always resolves (never rejects): { ok: true, lat, lng, accuracy } or { ok: false, reason }.
- * Falls back if: no API, not a secure context, denied, timeout, or the fix is off campus.
+ * Tries a quick low-accuracy fix first, then retries once with high accuracy
+ * (GPS) if that times out or comes back unavailable.
+ * Falls back if: no API, not a secure context, denied, unavailable, timeout, or off campus.
  */
-export function getLocation() {
-  return new Promise((resolve) => {
-    if (typeof window !== 'undefined' && !window.isSecureContext) {
-      resolve({ ok: false, reason: "Location needs https or localhost. Pick your dining court instead." });
-      return;
-    }
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      resolve({ ok: false, reason: "This browser can't share location. Pick your dining court instead." });
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        const km = haversineKm(here, CONFIG.WEST_LAFAYETTE);
-        if (km > CONFIG.MAX_DISTANCE_FROM_CAMPUS_KM) {
-          resolve({ ok: false, reason: `You seem to be ${km.toFixed(0)} km from campus. Pick your dining court instead.` });
-          return;
-        }
-        resolve({ ok: true, ...here, accuracy: Math.round(pos.coords.accuracy) });
-      },
-      (err) => {
-        const reason =
-          err.code === 1 ? 'Location was blocked. Pick your dining court instead.'
-          : err.code === 3 ? 'Location timed out. Pick your dining court instead.'
-          : "Couldn't get your location. Pick your dining court instead.";
-        resolve({ ok: false, reason });
-      },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 },
-    );
-  });
+export async function getLocation({ onRetry } = {}) {
+  if (typeof window !== 'undefined' && !window.isSecureContext) {
+    return {
+      ok: false,
+      reason: `Location only works on https or localhost, and this page is ${location.host}. On a phone, use the https (GitHub Pages) link. ${PICK}`,
+    };
+  }
+  if (typeof navigator === 'undefined' || !navigator.geolocation) {
+    return { ok: false, reason: `This browser can't share location. ${PICK}` };
+  }
+
+  let { pos, err } = await locateOnce({ enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 });
+  if (err && err.code !== 1) {
+    onRetry?.();
+    ({ pos, err } = await locateOnce({ enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }));
+  }
+
+  if (err) {
+    const reason =
+      err.code === 1
+        ? `Location is blocked for this site. Allow it from the icon next to the address bar, then tap the button again. ${PICK}`
+        : err.code === 2
+          ? `Your device couldn't find you. On a Mac, turn on Location Services for your browser in System Settings → Privacy & Security. On a phone, check that Location is on. ${PICK}`
+          : `Finding you took too long. Try again near a window or outside. ${PICK}`;
+    return { ok: false, reason };
+  }
+
+  const here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  const km = haversineKm(here, CONFIG.WEST_LAFAYETTE);
+  if (km > CONFIG.MAX_DISTANCE_FROM_CAMPUS_KM) {
+    return { ok: false, reason: `You seem to be ${km.toFixed(km < 10 ? 1 : 0)} km from campus, too far for walking times. ${PICK}` };
+  }
+  return { ok: true, ...here, accuracy: Math.round(pos.coords.accuracy) };
 }

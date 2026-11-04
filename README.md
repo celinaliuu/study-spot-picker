@@ -11,6 +11,16 @@ python3 -m http.server 8000
 # open http://localhost:8000
 ```
 
+**Location tips**
+- Open `http://localhost:8000`, not the `http://[::]:8000` link Python prints. Browsers block location there (the app now redirects automatically).
+- On a **phone**, location needs **https**. Opening `http://<your-mac's-IP>:8000` works, but location is blocked, so you'll pick a dining court instead. Host it on GitHub Pages to get https.
+- On a Mac, the browser needs Location Services on: System Settings → Privacy & Security → Location Services.
+
+## Modes
+
+- **🎯 Fit the group**: everyone takes the quiz, and the wheel spins between the 3 best-fitting spots.
+- **🎲 Wild**: no quiz. The wheel spins between 6 random spots with equal odds. Hard filters still apply (no Burton Morgan on weekends, no Downtown without a car).
+
 ## Editing spots
 
 Everything tweakable is in [`js/spots.js`](js/spots.js): tags, coordinates, and scoring weights (`CONFIG`).

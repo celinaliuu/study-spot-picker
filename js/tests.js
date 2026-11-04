@@ -6,6 +6,7 @@ import { rankSpots, effectiveNoise, whyLine, who } from './scoring.js';
 import { wheelShares, pickIndex, targetRotation, sliceAngles } from './wheel.js';
 import { walkMinutes } from './geo.js';
 import { classifyWeather } from './weather.js';
+import { buildWildPool, wildLine, shuffle } from './wild.js';
 
 // Mon 2 Nov 2026 + offset → a date on the given weekday (0 = Sun … 6 = Sat).
 const at = (weekday, h, m = 0) => new Date(2026, 10, 2 + ((weekday + 6) % 7), h, m);
@@ -129,6 +130,26 @@ test('who(): one, two, several, everyone', () => {
   assert(who(['A', 'B'], 3) === 'A and B');
   assert(who(['A', 'B', 'C'], 4) === 'A, B and C');
   assert(who(['A', 'B'], 2) === 'everyone');
+});
+
+// --- Wild mode ------------------------------------------------------------
+test('Wild pool: every allowed spot once, hard filters still apply', () => {
+  const pool = buildWildPool({ spots: SPOTS, now: at(SAT, 15), origin: court('windsor'), hasCar: false });
+  const pids = pool.map((e) => e.spot.id);
+  assert(new Set(pids).size === pids.length, 'no duplicates');
+  assert(!pids.includes('burton-morgan') && !pids.includes('downtown'), 'filters applied');
+  assert(pids.length === SPOTS.length - 2, `got ${pids.length}`);
+  assert(pool.every((e) => e.wild && typeof e.walkMin === 'number'));
+});
+test('Wild pool order is random', () => {
+  const a = shuffle([1, 2, 3, 4, 5, 6, 7, 8], () => 0.1).join();
+  const b = shuffle([1, 2, 3, 4, 5, 6, 7, 8], () => 0.9).join();
+  assert(a !== b);
+});
+test('Wild line names the spot (or is a fun line) and includes the weather', () => {
+  const [e] = buildWildPool({ spots: SPOTS, now: at(MON, 15), origin: court('windsor'), hasCar: false });
+  const s = wildLine(e, { category: 'nice', tempF: 68, phrase: 'sunny', kind: 'sun' }, () => 0.5);
+  assert(s.includes('68° and sunny') && s.length > 30, s);
 });
 
 // --- Wheel ----------------------------------------------------------------

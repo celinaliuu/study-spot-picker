@@ -5,6 +5,7 @@ import { getLocation } from './geo.js';
 import { fetchWeather } from './weather.js';
 import { renderWeatherCard } from './weather-card.js';
 import { createWheel, wheelShares } from './wheel.js';
+import { buildWildPool, wildLine, WILD_SLICES } from './wild.js';
 
 const QUESTIONS = [
   { key: 'stress', text: 'How stressed are you?', options: [
@@ -21,8 +22,14 @@ const QUESTIONS = [
     ['yes', '☕', 'Yes'], ['any', '🤷', "Don't care"] ] },
 ];
 
+// `python3 -m http.server` prints http://[::]:8000, which browsers don't treat as
+// secure, so geolocation is blocked. Hop over to localhost instead.
+if (['[::]', '0.0.0.0'].includes(location.hostname)) {
+  location.replace(`${location.protocol}//localhost${location.port ? ':' + location.port : ''}${location.pathname}${location.search}`);
+}
+
 const $ = (id) => document.getElementById(id);
-const SLICE_VARS = ['--slice-1', '--slice-2', '--slice-3', '--slice-4'];
+const SLICE_VARS = ['--slice-1', '--slice-2', '--slice-3', '--slice-4', '--slice-5', '--slice-6'];
 
 // ---------------------------------------------------------------------------
 // State
@@ -31,6 +38,7 @@ const weatherPromise = fetchWeather();
 let weather = null;
 
 const fresh = () => ({
+  mode: 'quiz',          // 'quiz' = fit the group, 'wild' = no quiz, random spots
   origin: null,          // { lat, lng, label, kind: 'gps' | 'court' }
   playerCount: 2,
   hasCar: false,
@@ -38,7 +46,7 @@ const fresh = () => ({
   current: 0,            // player index
   q: 0,                  // question index
   ranked: [],
-  offset: 0,             // 0 = top 3, 3 = next 3
+  offset: 0,             // index of the first spot on the wheel
   candidates: [],
   rerollUsed: false,
   now: null,
@@ -112,7 +120,7 @@ function initStart() {
     btn.disabled = true;
     st.className = 'status';
     st.textContent = 'Finding you…';
-    const loc = await getLocation();
+    const loc = await getLocation({ onRetry: () => { st.textContent = 'Still looking, trying GPS…'; } });
     btn.disabled = false;
     if (loc.ok) {
       setChecked($('court-options'), null);
@@ -126,8 +134,12 @@ function initStart() {
     }
   });
 
+  wireChips($('mode-options'), (v) => { state.mode = v; updateModeUI(); });
+  updateModeUI();
+
   $('btn-start').addEventListener('click', () => {
     if (!state.origin) return;
+    if (state.mode === 'wild') { startWild(); return; }
     state.players = Array.from({ length: state.playerCount }, (_, i) => ({ name: `Player ${i + 1}`, answers: {} }));
     state.current = 0;
     showHandoff();
@@ -243,8 +255,30 @@ async function finishQuiz() {
   showWheel();
 }
 
+const wheelSize = () => (state.mode === 'wild' ? WILD_SLICES : 3);
+
+function updateModeUI() {
+  const wild = state.mode === 'wild';
+  setChecked($('mode-options'), state.mode);
+  $('players-card').hidden = wild;
+  $('btn-start').textContent = wild ? '🎲 Spin the wild wheel' : "Let's go";
+  $('hero-sub').textContent = wild
+    ? 'Feeling lucky? Skip the quiz and let chaos pick.'
+    : 'Pass the phone around, answer six taps each, and let the wheel decide.';
+}
+
+async function startWild() {
+  if (!weather) weather = await weatherPromise;
+  state.now = new Date();
+  state.ranked = buildWildPool({ spots: SPOTS, now: state.now, origin: state.origin, hasCar: state.hasCar });
+  state.offset = 0;
+  state.rerollUsed = false;
+  showWheel();
+}
+
 function showWheel() {
-  state.candidates = state.ranked.slice(state.offset, state.offset + 3);
+  const wild = state.mode === 'wild';
+  state.candidates = state.ranked.slice(state.offset, state.offset + wheelSize());
   const c = state.candidates;
 
   if (c.length === 0) {
@@ -259,11 +293,14 @@ function showWheel() {
     return;
   }
 
-  const shares = wheelShares(c.map((e) => e.score));
+  const shares = wild ? c.map(() => 1 / c.length) : wheelShares(c.map((e) => e.score));
   const labels = c.map((e) => e.spot.shortName || e.spot.name);
   wheel = createWheel($('wheel'), labels, shares);
 
-  $('wheel-title').textContent = state.offset === 0 ? `Your top ${c.length}` : `The next ${c.length}`;
+  $('wheel-title').textContent = wild
+    ? (state.offset === 0 ? 'The wild wheel 🎲' : 'Wild wheel, round 2 🎲')
+    : (state.offset === 0 ? `Your top ${c.length}` : `The next ${c.length}`);
+  $('wheel-sub').textContent = wild ? 'No quiz, no logic. Every slice has the same odds.' : 'Bigger slice = better fit for the group.';
   const legend = $('wheel-legend');
   legend.innerHTML = '';
   c.forEach((e, i) => {
@@ -316,7 +353,9 @@ function showResult(entry, note) {
   const { spot } = entry;
   $('result-name').textContent = spot.name;
   $('result-vibe').textContent = spot.vibe;
-  $('result-why').textContent = note ? `${note} ${whyLine(entry, weather?.ok ? weather : null, { hasCar: state.hasCar })}` : whyLine(entry, weather?.ok ? weather : null, { hasCar: state.hasCar });
+  const wx = weather?.ok ? weather : null;
+  const why = entry.wild ? wildLine(entry, wx) : whyLine(entry, wx, { hasCar: state.hasCar });
+  $('result-why').textContent = note ? `${note} ${why}` : why;
 
   const facts = $('result-facts');
   facts.innerHTML = '';
@@ -339,7 +378,7 @@ function showResult(entry, note) {
   $('result-maps').href = mapsUrl(spot);
 
   // Reroll
-  const canNext = state.ranked.length > 3 && state.offset === 0;
+  const canNext = state.ranked.length > state.offset + wheelSize();
   const canRespin = state.candidates.length >= 2;
   $('btn-respin').disabled = state.rerollUsed || !canRespin;
   $('btn-next3').disabled = state.rerollUsed || !canNext;
@@ -347,7 +386,8 @@ function showResult(entry, note) {
     ? 'Reroll used. This is the one!'
     : 'You get one reroll.';
 
-  // Transparency: how every open spot scored
+  // Transparency: how every open spot scored (not meaningful in wild mode)
+  $('result-ranking').closest('details').hidden = !!entry.wild;
   const ol = $('result-ranking');
   ol.innerHTML = '';
   for (const e of state.ranked.slice(0, 8)) {
@@ -375,7 +415,7 @@ $('btn-respin').addEventListener('click', () => {
 $('btn-next3').addEventListener('click', () => {
   if (state.rerollUsed) return;
   state.rerollUsed = true;
-  state.offset = 3;
+  state.offset += wheelSize();
   showWheel();
 });
 
@@ -383,7 +423,9 @@ function restart() {
   const keepOrigin = state.origin;
   const keepCount = state.playerCount;
   const keepCar = state.hasCar;
+  const keepMode = state.mode;
   state = fresh();
+  state.mode = keepMode;
   // Keep the start-screen choices: it's usually the same group.
   state.origin = keepOrigin;
   state.playerCount = keepCount;

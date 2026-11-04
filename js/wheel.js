@@ -77,7 +77,7 @@ export function targetRotation(currentRotation, shares, idx, { spins = 5, rand =
 // DOM
 // ---------------------------------------------------------------------------
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const COLORS = ['var(--slice-1)', 'var(--slice-2)', 'var(--slice-3)', 'var(--slice-4)'];
+const COLORS = ['var(--slice-1)', 'var(--slice-2)', 'var(--slice-3)', 'var(--slice-4)', 'var(--slice-5)', 'var(--slice-6)'];
 const C = 100;
 const R = 96;
 
