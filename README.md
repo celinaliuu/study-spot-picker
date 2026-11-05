@@ -18,7 +18,7 @@ python3 -m http.server 8000
 
 ## Modes
 
-- **🎯 Fit the group**: everyone takes the quiz, and the wheel spins between the 3 best-fitting spots.
+- **🎯 Fit the group**: everyone takes the quiz, and the wheel spins between the best-fitting spots. Choose 3–6 spots on the wheel (default 5).
 - **🎲 Wild**: no quiz. The wheel spins between 6 random spots with equal odds. Hard filters still apply (no Burton Morgan on weekends, no Downtown without a car).
 
 ## Editing spots
@@ -31,15 +31,15 @@ Opening hours are not checked: every spot is assumed open except Burton Morgan, 
 1. **Hard filters** remove a spot if it's Burton Morgan on a weekend or if it's Downtown and the group has no car.
 2. Each player gets a **utility** per spot from their answers (noise fit scaled by stress, work type, energy, session length, coffee).
 3. **Avoid misery:** a player is *miserable* if their utility is below `MISERY_THRESHOLD` or a veto hits ("silence please" at a buzzy/loud spot or Hagle's instruments, "want to talk" at a silent spot, group work at a solo-only spot). Each miserable player costs `MISERY_PENALTY`, and ranking sorts by **fewest miserable first**, score second.
-4. **Group modifiers** cover distance (scaled by weather), low priority, often full (worse for long sessions and big groups), group-space bonus for 4+, and time rules (Frieda after 10pm).
-5. The wheel gets the top 3, with slices proportional to score and clamped to 15–60%.
+4. **Group modifiers** cover distance (only if the group picks **Keep it close**, then scaled by weather), low priority, often full (worse for long sessions and big groups), group-space bonus for 4+, and time rules (Frieda after 10pm).
+5. The wheel gets the top 3–6 (at most one spot per building), with slices proportional to score. Each slice is between min(15%, 60%/n) and 60%. Ties break randomly.
 
 ## Assumptions to check
 
 These are judgment calls where the spec was silent or ambiguous. All of them are `CONFIG` values or data fields in `js/spots.js`:
 
 - **Energy** has no rule in the spec. Food-coma players favor comfy spots, coffee, and short walks; wired players tolerate more noise.
-- **Nice weather** sets the distance penalty to 0, per the spec (`WEATHER_DISTANCE_FACTOR.nice`). I'd suggest `0.4`, since a 25-min walk still costs something.
+- **Distance** is off unless the group picks "Keep it close". Then bad weather doubles the walking penalty and nice weather removes it (`WEATHER_DISTANCE_FACTOR`). Location is optional otherwise, and only adds walk times and directions.
 - **Downtown with a car** counts as a short drive (flat −3), not a ~45-min walk.
 - **WALC** is quiet from 7pm to 6am.
 - **Location more than 3 km from campus** is treated as a bad fix, and the dining court picker shows instead.

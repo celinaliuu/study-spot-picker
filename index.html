@@ -24,13 +24,13 @@
       <div class="card">
         <h2>How should we pick?</h2>
         <div id="mode-options" class="chips chips-two mode-chips" role="radiogroup" aria-label="Mode">
-          <button type="button" class="chip" role="radio" data-value="quiz" aria-checked="true">🎯 Fit the group<small>Quick quiz, best 3 spots</small></button>
+          <button type="button" class="chip" role="radio" data-value="quiz" aria-checked="true">🎯 Fit the group<small>Quick quiz, best-fit spots</small></button>
           <button type="button" class="chip" role="radio" data-value="wild" aria-checked="false">🎲 Wild<small>No quiz, 6 random spots</small></button>
         </div>
       </div>
 
       <div class="card">
-        <h2>Where are you now?</h2>
+        <h2>Where are you now? <span id="origin-optional" class="optional">optional</span></h2>
         <button id="btn-locate" class="btn btn-secondary btn-block" type="button">📍 Use my location</button>
         <p id="locate-status" class="status" aria-live="polite"></p>
         <p class="label">…or pick the dining court you're leaving</p>
@@ -40,18 +40,29 @@
       <div class="card" id="players-card">
         <h2>How many of you?</h2>
         <div id="player-options" class="chips chips-numbers" role="radiogroup" aria-label="Number of players"></div>
+
+        <h2 class="h2-gap">Feel like walking?</h2>
+        <div id="walk-options" class="chips chips-two" role="radiogroup" aria-label="Walking">
+          <button type="button" class="chip" role="radio" data-value="any" aria-checked="true">🚶 Anywhere's fine</button>
+          <button type="button" class="chip" role="radio" data-value="close" aria-checked="false">🛋️ Keep it close</button>
+        </div>
+        <p id="walk-hint" class="hint hint-left">Distance won't count.</p>
+
+        <h2 class="h2-gap">Spots on the wheel</h2>
+        <div id="size-options" class="chips chips-numbers chips-four" role="radiogroup" aria-label="Spots on the wheel"></div>
       </div>
 
       <div class="card">
-        <h2>Got a car, or willing to walk far?</h2>
+        <h2>Up for Downtown Lafayette?</h2>
+        <p class="hint hint-left hint-under">Only if you've got a car or don't mind a long walk.</p>
         <div id="car-options" class="chips chips-two" role="radiogroup" aria-label="Car or long walk">
           <button type="button" class="chip" role="radio" data-value="yes" aria-checked="false">Yes</button>
           <button type="button" class="chip" role="radio" data-value="no" aria-checked="true">No</button>
         </div>
       </div>
 
-      <button id="btn-start" class="btn btn-primary btn-block btn-big" type="button" disabled>Let's go</button>
-      <p id="start-hint" class="hint">Pick a starting point first.</p>
+      <button id="btn-start" class="btn btn-primary btn-block btn-big" type="button">Let's go</button>
+      <p id="start-hint" class="hint" hidden></p>
     </section>
 
     <!-- 2. Hand-off + name -->

@@ -5,7 +5,7 @@ import { getLocation } from './geo.js';
 import { fetchWeather } from './weather.js';
 import { renderWeatherCard } from './weather-card.js';
 import { createWheel, wheelShares } from './wheel.js';
-import { buildWildPool, wildLine, WILD_SLICES } from './wild.js';
+import { buildWildPool, wildLine, WILD_SLICES, shuffle } from './wild.js';
 
 const QUESTIONS = [
   { key: 'stress', text: 'How stressed are you?', options: [
@@ -41,6 +41,8 @@ const fresh = () => ({
   mode: 'quiz',          // 'quiz' = fit the group, 'wild' = no quiz, random spots
   origin: null,          // { lat, lng, label, kind: 'gps' | 'court' }
   playerCount: 2,
+  keepClose: false,      // "Keep it close": only then does distance count
+  wheelSize: 5,          // spots on the quiz wheel (3–6)
   hasCar: false,
   players: [],           // [{ name, answers }]
   current: 0,            // player index
@@ -95,8 +97,18 @@ const setChecked = (container, value) => {
 
 function setOrigin(origin) {
   state.origin = origin;
-  $('btn-start').disabled = !origin;
-  $('start-hint').hidden = !!origin;
+  updateStartButton();
+}
+
+// A starting point is only required when distance counts ("Keep it close").
+// Otherwise it's optional and just adds walk times + directions.
+function updateStartButton() {
+  const needsOrigin = state.mode === 'quiz' && state.keepClose;
+  const blocked = needsOrigin && !state.origin;
+  $('btn-start').disabled = blocked;
+  $('start-hint').hidden = !blocked;
+  $('start-hint').textContent = 'Pick a starting point so we can keep it close.';
+  $('origin-optional').hidden = needsOrigin;
 }
 
 function initStart() {
@@ -113,6 +125,18 @@ function initStart() {
   }, '2');
 
   wireChips($('car-options'), (v) => { state.hasCar = v === 'yes'; });
+
+  wireChips($('walk-options'), (v) => {
+    state.keepClose = v === 'close';
+    $('walk-hint').textContent = state.keepClose
+      ? 'Closer spots win, especially when the weather is bad.'
+      : "Distance won't count.";
+    updateStartButton();
+  });
+
+  chipGroup($('size-options'), [3, 4, 5, 6].map((n) => [String(n), String(n)]), (v) => {
+    state.wheelSize = Number(v);
+  }, String(state.wheelSize));
 
   $('btn-locate').addEventListener('click', async () => {
     const btn = $('btn-locate');
@@ -138,7 +162,7 @@ function initStart() {
   updateModeUI();
 
   $('btn-start').addEventListener('click', () => {
-    if (!state.origin) return;
+    if ($('btn-start').disabled) return;
     if (state.mode === 'wild') { startWild(); return; }
     state.players = Array.from({ length: state.playerCount }, (_, i) => ({ name: `Player ${i + 1}`, answers: {} }));
     state.current = 0;
@@ -243,11 +267,12 @@ async function finishQuiz() {
   state.now = new Date();
   const { ranked } = rankSpots({
     players: state.players,
-    spots: SPOTS,
+    spots: shuffle(SPOTS), // ranking is stable, so shuffling first breaks score ties randomly
     now: state.now,
     weather: weather.ok ? weather : null,
     origin: state.origin,
     hasCar: state.hasCar,
+    keepClose: state.keepClose,
   });
   state.ranked = ranked;
   state.page = 0;
@@ -255,12 +280,13 @@ async function finishQuiz() {
   showWheel();
 }
 
-const wheelSize = () => (state.mode === 'wild' ? WILD_SLICES : 3);
+const wheelSize = () => (state.mode === 'wild' ? WILD_SLICES : state.wheelSize);
 
 function updateModeUI() {
   const wild = state.mode === 'wild';
   setChecked($('mode-options'), state.mode);
   $('players-card').hidden = wild;
+  updateStartButton();
   $('btn-start').textContent = wild ? '🎲 Spin the wild wheel' : "Let's go";
   $('hero-sub').textContent = wild
     ? 'Feeling lucky? Skip the quiz and let chaos pick.'
@@ -340,6 +366,7 @@ function mapsUrl(spot) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.mapsQuery)}`;
   }
   const o = state.origin;
+  if (!o) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.mapsQuery)}`;
   const params = new URLSearchParams({
     api: '1',
     origin: `${o.lat},${o.lng}`,
@@ -424,8 +451,12 @@ function restart() {
   const keepCount = state.playerCount;
   const keepCar = state.hasCar;
   const keepMode = state.mode;
+  const keepClose = state.keepClose;
+  const keepSize = state.wheelSize;
   state = fresh();
   state.mode = keepMode;
+  state.keepClose = keepClose;
+  state.wheelSize = keepSize;
   // Keep the start-screen choices: it's usually the same group.
   state.origin = keepOrigin;
   state.playerCount = keepCount;

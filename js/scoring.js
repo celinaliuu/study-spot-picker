@@ -101,9 +101,10 @@ export function playerUtility(answers, spot, ctx) {
  * @param {{category:'bad'|'meh'|'nice', tempF?:number, phrase?:string}|null} p.weather
  * @param {{lat:number,lng:number}|null} p.origin
  * @param {boolean} p.hasCar
+ * @param {boolean} [p.keepClose=false]  "Keep it close": only then does distance (and weather's effect on it) count
  * @returns {{ ranked: object[], removed: {spot, reason}[] }}
  */
-export function rankSpots({ players, spots, now, weather, origin, hasCar }) {
+export function rankSpots({ players, spots, now, weather, origin, hasCar, keepClose = false }) {
   const n = players.length;
   const wx = weather?.category ?? 'meh';
   const removed = [];
@@ -129,18 +130,22 @@ export function rankSpots({ players, spots, now, weather, origin, hasCar }) {
     let score = meanU - CONFIG.MISERY_PENALTY * miserable.length;
     const mods = {};
 
-    // Distance (walk from the origin; downtown with a car is treated as a short drive).
+    // Distance only counts when the group picked "Keep it close". The walk time is
+    // still computed so the result screen can show it.
+    // (Downtown with a car is treated as a short drive.)
     const walkMin = walkMinutes(origin, spot);
-    if (spot.requiresCar) {
-      mods.travel = -3;
-    } else if (walkMin != null) {
-      mods.distance =
-        -CONFIG.DISTANCE_PENALTY_PER_MIN *
-        Math.max(0, walkMin - CONFIG.FREE_WALK_MIN) *
-        CONFIG.WEATHER_DISTANCE_FACTOR[wx] *
-        (1 + 0.3 * tiredShare);
+    if (keepClose) {
+      if (spot.requiresCar) {
+        mods.travel = -3;
+      } else if (walkMin != null) {
+        mods.distance =
+          -CONFIG.DISTANCE_PENALTY_PER_MIN *
+          Math.max(0, walkMin - CONFIG.FREE_WALK_MIN) *
+          CONFIG.WEATHER_DISTANCE_FACTOR[wx] *
+          (1 + 0.3 * tiredShare);
+      }
+      if (wx === 'bad' && spot.requiresCar) mods.badWeatherDowntown = -CONFIG.BAD_WEATHER_DOWNTOWN_PENALTY;
     }
-    if (wx === 'bad' && spot.requiresCar) mods.badWeatherDowntown = -CONFIG.BAD_WEATHER_DOWNTOWN_PENALTY;
 
     if (spot.lowPriority) mods.lowPriority = -CONFIG.LOW_PRIORITY_PENALTY;
     if (spot.oftenFull) mods.oftenFull = -spot.oftenFull * CONFIG.OFTEN_FULL_BASE * (1 + sessionFactor + groupFactor);
@@ -159,6 +164,7 @@ export function rankSpots({ players, spots, now, weather, origin, hasCar }) {
       miserableCount: miserable.length,
       miserableNames: miserable.map((x) => x.name),
       walkMin,
+      keepClose,
       ctx,
       mods,
       per,
@@ -246,7 +252,7 @@ export function reasonsFor(entry, { hasCar, weather } = {}) {
   if (longHaul.length && spot.outlets === 'many') add(1 + longHaul.length, 'there are outlets everywhere for the long haul');
 
   // Distance (the weather sentence covers the walk when it's gross out)
-  if (walkMin != null && walkMin <= 6 && !spot.requiresCar && weather?.category !== 'bad') add(3, `it's only a ~${walkMin} min walk`);
+  if (entry.keepClose && walkMin != null && walkMin <= 6 && !spot.requiresCar && weather?.category !== 'bad') add(3, `it's only a ~${walkMin} min walk`);
   if (spot.requiresCar && hasCar) add(2, 'you get a change of scenery downtown');
   if (miserableCount === 0 && n >= 3) add(1, "nobody's going to be miserable");
 
@@ -266,7 +272,7 @@ export function weatherSentence(weather, entry) {
   const t = Math.round(weather.tempF);
   const emoji = WEATHER_EMOJI[weather.kind] ? ' ' + WEATHER_EMOJI[weather.kind] : '';
   const walk = entry?.walkMin;
-  const close = walk != null && walk <= 8 && !entry.spot.requiresCar;
+  const close = entry?.keepClose && walk != null && walk <= 8 && !entry.spot.requiresCar;
   const base = `It's ${t}° and ${weather.phrase}`;
   if (entry?.spot.requiresCar) return `${base}, but you've got a car.${emoji}`;
   if (weather.category === 'bad') {

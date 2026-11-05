@@ -110,17 +110,28 @@ test('Solo readers who want silence get quiet spots on top', () => {
 // --- Weather & distance ---------------------------------------------------
 test('Rain makes far spots worse; nice weather removes the distance penalty', () => {
   const origin = court('hillenbrand');
-  const score = (category) => entry(run({ origin, weather: { category, tempF: 50 } }), 'rawls');
+  const score = (category) => entry(run({ origin, keepClose: true, weather: { category, tempF: 50 } }), 'rawls');
   const bad = score('bad'), meh = score('meh'), nice = score('nice');
   assert(bad.mods.distance < meh.mods.distance, 'bad < meh');
   assert(nice.mods.distance === 0 || Object.is(nice.mods.distance, -0), 'nice = 0');
+});
+test('Distance is ignored unless the group picks "Keep it close"', () => {
+  const origin = court('hillenbrand');
+  const r = run({ origin, hasCar: true, weather: { category: 'bad', tempF: 35 } });
+  for (const e of r.ranked) {
+    assert(!('distance' in e.mods) && !('travel' in e.mods) && !('badWeatherDowntown' in e.mods), e.spot.id);
+    assert(typeof e.walkMin === 'number', 'walk time still shown');
+  }
+  // Same group, but keep it close → the far spot drops.
+  const far = (keepClose) => ids(run({ origin, keepClose })).indexOf('rawls');
+  assert(far(true) > far(false), `rawls rank ${far(false)} → ${far(true)}`);
 });
 test('Walking time Hillenbrand → Rawls is plausible (10–30 min)', () => {
   const m = walkMinutes(court('hillenbrand'), byId.rawls);
   assert(m >= 10 && m <= 30, `got ${m}`);
 });
 test('Bad weather adds a downtown penalty', () => {
-  const r = run({ hasCar: true, weather: { category: 'bad', tempF: 35 } });
+  const r = run({ hasCar: true, keepClose: true, weather: { category: 'bad', tempF: 35 } });
   assert(entry(r, 'downtown').mods.badWeatherDowntown < 0);
 });
 
@@ -188,6 +199,12 @@ test('Wheel shares sum to 1 and stay within 15–60%', () => {
   assert(Math.abs(eq[0] - 1 / 3) < 1e-9, 'equal scores → equal slices');
   const sh = wheelShares([9, 5, 1]);
   assert(sh[0] > sh[1] && sh[1] > sh[2], 'higher score → bigger slice');
+  for (const scores of [[9, 7, 5, 3, 1], [12, 8, 6, 5, 2, -4]]) {
+    const big = wheelShares(scores);
+    const sum = big.reduce((a, b) => a + b, 0);
+    assert(Math.abs(sum - 1) < 1e-9 && big.every((x) => x >= 0.6 / scores.length - 1e-9), `${big}`);
+    assert(big[0] > big[big.length - 1], 'best fit still biggest');
+  }
 });
 test('Pointer lands inside the picked slice', () => {
   const shares = wheelShares([9, 5, 1]);

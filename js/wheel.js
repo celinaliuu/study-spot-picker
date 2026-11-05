@@ -13,6 +13,8 @@ export function wheelShares(scores, lo = CONFIG.WHEEL_MIN_SHARE, hi = CONFIG.WHE
   const min = Math.min(...scores);
   const max = Math.max(...scores);
   const floor = 1 + 0.2 * (max - min);
+  // With more slices, let the smallest ones shrink a bit so the best fit still stands out.
+  lo = Math.min(lo, 0.6 / n);
   const w = scores.map((s) => s - min + floor);
 
   // Infeasible limits (e.g. 2 slices with hi < 0.5) → relax them.

@@ -15,9 +15,9 @@ A web app that ends the "idk, where do you want to study?" debate. Friends finis
 1. **Start screen**: get the starting point with a "Use my location" button (browser geolocation). If location is denied or unavailable, fall back to choosing the dining court you're leaving from (Earhart, Ford, Hillenbrand, Wiley, Windsor). Also choose the number of players (2–6) and answer "Do we have a car / willing to walk far?" (yes/no).
 2. **Pass-the-phone quiz**: each player enters a name and taps through the questions. A "pass to next person" screen in between hides the previous answers.
 3. **Scoring** (see below), using the current weather plus the current day and time.
-4. **Wheel**: the top 3 spots, with slices weighted by score so the best fit is likelier. Spin animation.
+4. **Wheel**: the top spots (group picks 3–6, default 5; at most one per building), with slices weighted by score so the best fit is likelier. Spin animation.
 5. **Result**: the spot, a one-line "why" (e.g. "Quiet enough for the stressed people, coffee nearby, and it's 41° and drizzly"), and a Google Maps link.
-6. **One reroll** per session (it re-spins the same top 3, or the next 3 if everyone hates them).
+6. **One reroll** per session (it re-spins the same spots, or the next set of spots if everyone hates them).
 
 ## Quiz (one tap per question)
 1. **Stress**: chill / kinda stressed / panicking
@@ -33,8 +33,7 @@ A web app that ends the "idk, where do you want to study?" debate. Friends finis
 - **Hard filters** (remove the spot entirely):
   - Burton Morgan on Saturday/Sunday.
   - Downtown Lafayette unless the group said they have a car / will walk far.
-- **Weather**: in rain, snow, or cold (< 40°F), penalize far spots and downtown. In nice weather, remove the distance penalty.
-- **Distance**: penalty based on the walk from the user's current location (or the chosen dining court if location isn't available). Show the approximate walking time on the result screen (e.g. "~8 min walk").
+- **Distance**: only counts if the group picks "Keep it close" on the start screen. Then: penalty based on the walk from the user's location (or chosen dining court), and in rain, snow, or cold (< 40°F) penalize far spots and downtown more (no distance penalty in nice weather). Otherwise distance is ignored and location is optional. Show the approximate walking time on the result screen when known (e.g. "~8 min walk").
 - **Time of day**: WALC is "loud" before ~7pm and "quiet" after.
 - **Low priority** spots get a flat penalty.
 - **Often full** spots get a small penalty, bigger for longer sessions and bigger groups.

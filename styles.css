@@ -119,6 +119,13 @@ h1:focus { outline: none; }
 .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
 .chips-numbers { grid-template-columns: repeat(5, 1fr); }
 .chips-two { grid-template-columns: 1fr 1fr; }
+.chips-four { grid-template-columns: repeat(4, 1fr); }
+.h2-gap { margin-top: 20px; }
+.optional { font-size: 0.75rem; font-weight: 600; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
+.optional[hidden] { display: none; }
+#start-hint[hidden] { display: none; }
+.hint-left { text-align: left; margin-top: 8px; }
+.hint-under { margin: -4px 0 10px; }
 .chip {
   appearance: none; font: inherit; font-weight: 600; cursor: pointer;
   min-height: 52px; padding: 8px 6px; border-radius: 12px; font-size: 0.95rem;
