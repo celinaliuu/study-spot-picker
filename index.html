@@ -3,77 +3,106 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#16181c" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000">
+  <meta name="color-scheme" content="dark">
   <title>Study Spot Picker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@500;600;700;800&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Runs before the app. If anything throws (e.g. a stale cached file),
+    // show a banner instead of silently dead buttons.
+    window.addEventListener('error', function (e) {
+      var t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = 'Something broke 😵 Try a hard refresh (⌘⇧R / Ctrl⇧R). ' + (e.message || '');
+      t.hidden = false;
+    });
+  </script>
 </head>
 <body>
+  <div class="stage" aria-hidden="true"><span class="beam beam-l"></span><span class="beam beam-r"></span></div>
+  <div id="toast" class="toast" role="alert" hidden></div>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
   <main id="app">
 
     <!-- 1. Start -->
     <section id="screen-start" class="screen">
       <header class="hero">
-        <h1>Where are we studying?</h1>
+        <p class="eyebrow">★ Boilermaker Edition ★</p>
+        <h1 class="title">Where are we <span class="hl">studying</span>?</h1>
         <p id="hero-sub" class="sub">Pass the phone around, answer six taps each, and let the wheel decide.</p>
-        <div id="weather-card" class="weather-card" data-kind="loading" role="status" aria-live="polite">
-          <p class="w-blurb">Peeking outside… 👀</p>
-        </div>
       </header>
+
+      <div id="weather-card" class="weather-card" data-kind="loading" role="status" aria-live="polite">
+        <p class="w-blurb">Peeking outside… 👀</p>
+      </div>
 
       <div class="card">
         <h2>How should we pick?</h2>
-        <div id="mode-options" class="chips chips-two mode-chips" role="radiogroup" aria-label="Mode">
-          <button type="button" class="chip" role="radio" data-value="quiz" aria-checked="true">🎯 Fit the group<small>Quick quiz, best-fit spots</small></button>
-          <button type="button" class="chip" role="radio" data-value="wild" aria-checked="false">🎲 Wild<small>No quiz, 6 random spots</small></button>
+        <div id="mode-options" class="seg seg-tall" role="radiogroup" aria-label="Mode">
+          <span class="seg-thumb" aria-hidden="true"></span>
+          <button type="button" class="chip" role="radio" data-value="quiz" aria-checked="true"><span class="big-emoji">🎯</span>Fit the group<small>Quiz → best fits</small></button>
+          <button type="button" class="chip" role="radio" data-value="wild" aria-checked="false"><span class="big-emoji">🎲</span>Wild<small>No quiz, pure chaos</small></button>
         </div>
       </div>
 
       <div class="card" id="players-card">
         <h2>How many of you?</h2>
-        <div id="player-options" class="chips chips-numbers" role="radiogroup" aria-label="Number of players"></div>
+        <div id="player-options" class="seg" role="radiogroup" aria-label="Number of players"></div>
 
         <h2 class="h2-gap">Feel like walking?</h2>
-        <div id="walk-options" class="chips chips-two" role="radiogroup" aria-label="Walking">
+        <div id="walk-options" class="seg" role="radiogroup" aria-label="Walking">
+          <span class="seg-thumb" aria-hidden="true"></span>
           <button type="button" class="chip" role="radio" data-value="any" aria-checked="true">🚶 Anywhere's fine</button>
           <button type="button" class="chip" role="radio" data-value="close" aria-checked="false">🛋️ Keep it close</button>
         </div>
-        <p id="walk-hint" class="hint hint-left">Distance won't count.</p>
+        <p id="walk-hint" class="hint">Distance won't count.</p>
 
         <!-- Only shown with "Keep it close" -->
-        <div id="origin-section" class="origin-section" hidden>
-          <h2>Where are you now?</h2>
-          <button id="btn-locate" class="btn btn-secondary btn-block" type="button">📍 Use my location</button>
-          <p id="locate-status" class="status" aria-live="polite"></p>
-          <p class="label">…or pick the dining court you're leaving</p>
-          <div id="court-options" class="chips" role="radiogroup" aria-label="Dining court"></div>
+        <div id="origin-section" class="collapse" aria-hidden="true" inert>
+          <div class="collapse-inner">
+            <div class="origin-box">
+              <h2>Where are you now?</h2>
+              <button id="btn-locate" class="btn btn-secondary btn-block" type="button">📍 Use my location</button>
+              <p id="locate-status" class="status" aria-live="polite"></p>
+              <p class="label">…or pick the dining court you're leaving</p>
+              <div id="court-options" class="chips" role="radiogroup" aria-label="Dining court"></div>
+            </div>
+          </div>
         </div>
 
         <h2 class="h2-gap">Spots on the wheel</h2>
-        <div id="size-options" class="chips chips-numbers chips-four" role="radiogroup" aria-label="Spots on the wheel"></div>
+        <div id="size-options" class="seg" role="radiogroup" aria-label="Spots on the wheel"></div>
       </div>
 
       <div class="card">
         <h2>Up for Downtown Lafayette?</h2>
-        <p class="hint hint-left hint-under">Only if you've got a car or don't mind a long walk.</p>
-        <div id="car-options" class="chips chips-two" role="radiogroup" aria-label="Car or long walk">
-          <button type="button" class="chip" role="radio" data-value="yes" aria-checked="false">Yes</button>
-          <button type="button" class="chip" role="radio" data-value="no" aria-checked="true">No</button>
+        <p class="hint hint-under">Only if you've got a car or don't mind a long walk.</p>
+        <div id="car-options" class="seg" role="radiogroup" aria-label="Car or long walk">
+          <span class="seg-thumb" aria-hidden="true"></span>
+          <button type="button" class="chip" role="radio" data-value="yes" aria-checked="false">🚗 Yes</button>
+          <button type="button" class="chip" role="radio" data-value="no" aria-checked="true">🙅 No</button>
         </div>
       </div>
 
-      <button id="btn-start" class="btn btn-primary btn-block btn-big" type="button">Let's go</button>
-      <p id="start-hint" class="hint" hidden></p>
+      <div class="sticky-cta">
+        <button id="btn-start" class="btn btn-primary btn-block btn-big" type="button">Let's play</button>
+        <p id="start-hint" class="hint hint-center" hidden></p>
+      </div>
     </section>
 
     <!-- 2. Hand-off + name -->
     <section id="screen-handoff" class="screen screen-center" hidden>
+      <div class="handoff-emoji" aria-hidden="true">📱</div>
       <p id="handoff-kicker" class="kicker"></p>
       <h1 id="handoff-title" tabindex="-1"></h1>
       <form id="name-form" class="name-form" autocomplete="off">
         <label for="name-input" class="label">Your name</label>
         <input id="name-input" class="input" type="text" maxlength="20" enterkeyhint="go">
-        <button class="btn btn-primary btn-block btn-big" type="submit">I'm ready</button>
+        <button class="btn btn-primary btn-block btn-big" type="submit">I'm ready →</button>
       </form>
     </section>
 
@@ -90,29 +119,35 @@
 
     <!-- 4. Wheel -->
     <section id="screen-wheel" class="screen screen-center" hidden>
-      <h1 id="wheel-title" tabindex="-1">Your top 3</h1>
+      <div class="wheel-head">
+        <h1 id="wheel-title" tabindex="-1">Your top picks</h1>
+        <button id="btn-sound" class="btn-icon" type="button" aria-pressed="true" aria-label="Sound on">🔊</button>
+      </div>
       <p id="wheel-sub" class="sub">Bigger slice = better fit for the group.</p>
       <div id="wheel" class="wheel"></div>
       <ul id="wheel-legend" class="legend"></ul>
-      <button id="btn-spin" class="btn btn-primary btn-block btn-big" type="button">Spin!</button>
+      <button id="btn-spin" class="btn btn-primary btn-block btn-big btn-pulse" type="button">Spin the wheel</button>
     </section>
 
     <!-- 5. Result -->
     <section id="screen-result" class="screen" hidden>
-      <p class="kicker">You're going to</p>
-      <h1 id="result-name" class="result-name" tabindex="-1"></h1>
-      <p id="result-vibe" class="vibe"></p>
+      <div class="reveal">
+        <div class="reveal-rays" aria-hidden="true"></div>
+        <p class="reveal-kicker">And the spot is…</p>
+        <h1 id="result-name" class="result-name" tabindex="-1"></h1>
+        <p id="result-vibe" class="vibe"></p>
+      </div>
       <p id="result-why" class="why"></p>
       <ul id="result-facts" class="facts"></ul>
       <p id="result-heads-up" class="heads-up" hidden></p>
-      <a id="result-maps" class="btn btn-primary btn-block btn-big" target="_blank" rel="noopener">Open in Google Maps</a>
+      <a id="result-maps" class="btn btn-primary btn-block btn-big" target="_blank" rel="noopener">🗺️ Open in Google Maps</a>
 
       <div id="reroll-box" class="card reroll">
         <h2>Not feeling it?</h2>
         <p class="hint">You get one reroll.</p>
         <div class="reroll-buttons">
-          <button id="btn-respin" class="btn btn-secondary" type="button">Spin again</button>
-          <button id="btn-next3" class="btn btn-secondary" type="button">None of these</button>
+          <button id="btn-respin" class="btn btn-secondary" type="button">🔁 Spin again</button>
+          <button id="btn-next3" class="btn btn-secondary" type="button">🙈 None of these</button>
         </div>
       </div>
 
@@ -121,11 +156,12 @@
         <ol id="result-ranking" class="ranking"></ol>
       </details>
 
-      <button id="btn-restart" class="btn btn-ghost btn-block" type="button">Start over</button>
+      <button id="btn-restart" class="btn btn-ghost btn-block" type="button">↺ Start over</button>
     </section>
 
     <!-- 6. Nothing open -->
     <section id="screen-none" class="screen screen-center" hidden>
+      <div class="handoff-emoji" aria-hidden="true">🫠</div>
       <h1 tabindex="-1">Nothing fits right now</h1>
       <p id="none-text" class="sub"></p>
       <button class="btn btn-primary btn-block btn-big js-restart" type="button">Start over</button>

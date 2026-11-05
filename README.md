@@ -7,9 +7,13 @@ Ends the "idk, where do you want to study?" debate. See `CLAUDE.md` for the spec
 Geolocation and ES modules need http(s) or localhost, so don't open the file as `file://`.
 
 ```sh
-python3 -m http.server 8000
+python3 serve.py
 # open http://localhost:8000
 ```
+
+`serve.py` is a tiny wrapper around Python's built-in server that turns caching off. With plain `python3 -m http.server`, the browser can keep running an old copy of the JavaScript after you change it, and buttons stop working. If that ever happens, hard-refresh (⌘⇧R).
+
+If something does break, a gold banner at the top of the page shows the error.
 
 **Location tips**
 - Open `http://localhost:8000`, not the `http://[::]:8000` link Python prints. Browsers block location there (the app now redirects automatically).

@@ -1,10 +1,11 @@
 // Screen state machine: start → hand-off → quiz → … → wheel → result.
+// UI only: all scoring lives in scoring.js / wild.js.
 import { SPOTS, DINING_COURTS } from './spots.js';
 import { rankSpots, whyLine, wheelPage } from './scoring.js';
 import { getLocation } from './geo.js';
 import { fetchWeather } from './weather.js';
 import { renderWeatherCard } from './weather-card.js';
-import { createWheel, wheelShares } from './wheel.js';
+import { createWheel, wheelShares, sound } from './wheel.js';
 import { buildWildPool, wildLine, WILD_SLICES, shuffle } from './wild.js';
 
 const QUESTIONS = [
@@ -19,7 +20,7 @@ const QUESTIONS = [
   { key: 'length', text: 'How long are you staying?', options: [
     ['quick', '⏱️', 'Quick hour'], ['few', '⌛', 'A few hours'], ['late', '🌙', 'Until they kick us out'] ] },
   { key: 'coffee', text: 'Coffee?', options: [
-    ['yes', '☕', 'Yes'], ['any', '🤷', "Don't care"] ] },
+    ['yes', '☕', 'Yes please'], ['any', '🤷', "Don't care"] ] },
 ];
 
 // `python3 -m http.server` prints http://[::]:8000, which browsers don't treat as
@@ -29,7 +30,14 @@ if (['[::]', '0.0.0.0'].includes(location.hostname)) {
 }
 
 const $ = (id) => document.getElementById(id);
+/** addEventListener that never crashes startup if an element is missing. */
+const on = (id, evt, fn) => {
+  const node = $(id);
+  if (node) node.addEventListener(evt, fn);
+  else console.warn(`[spot-picker] missing #${id}`);
+};
 const SLICE_VARS = ['--slice-1', '--slice-2', '--slice-3', '--slice-4', '--slice-5', '--slice-6'];
+const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 // ---------------------------------------------------------------------------
 // State
@@ -57,18 +65,45 @@ let state = fresh();
 let wheel = null;
 let spinning = false;
 
-function show(screenId) {
-  for (const s of document.querySelectorAll('.screen')) s.hidden = s.id !== screenId;
+/** Show one screen, sliding in from the right (forward) or left (back). */
+function show(screenId, dir = 'fwd') {
+  for (const s of document.querySelectorAll('.screen')) {
+    s.hidden = s.id !== screenId;
+    s.classList.remove('slide-fwd', 'slide-back');
+  }
+  const target = $(screenId);
+  void target.offsetWidth; // restart the slide animation
+  target.classList.add(dir === 'back' ? 'slide-back' : 'slide-fwd');
   window.scrollTo(0, 0);
-  const h = $(screenId).querySelector('h1');
-  if (h) h.focus({ preventScroll: true });
+  target.querySelector('h1')?.focus({ preventScroll: true });
+  if (screenId === 'screen-start') requestAnimationFrame(syncAllThumbs);
 }
 
 // ---------------------------------------------------------------------------
-// Start screen
+// Segmented controls (sliding gold thumb) + chips
 // ---------------------------------------------------------------------------
+function syncThumb(container) {
+  const thumb = container?.querySelector('.seg-thumb');
+  const btn = container?.querySelector('.chip[aria-checked="true"]');
+  if (!thumb) return;
+  if (!btn || !btn.offsetWidth) { thumb.style.width = '0'; return; }
+  thumb.style.width = `${btn.offsetWidth}px`;
+  thumb.style.height = `${btn.offsetHeight}px`;
+  thumb.style.transform = `translate(${btn.offsetLeft}px, ${btn.offsetTop}px)`;
+}
+const syncAllThumbs = () => document.querySelectorAll('.seg').forEach(syncThumb);
+window.addEventListener('resize', syncAllThumbs);
+document.fonts?.ready.then(syncAllThumbs);
+
 function chipGroup(container, items, onPick, selected) {
+  if (!container) return;
   container.innerHTML = '';
+  if (container.classList.contains('seg')) {
+    const thumb = document.createElement('span');
+    thumb.className = 'seg-thumb';
+    thumb.setAttribute('aria-hidden', 'true');
+    container.append(thumb);
+  }
   for (const [value, label] of items) {
     const b = document.createElement('button');
     b.type = 'button';
@@ -83,6 +118,7 @@ function chipGroup(container, items, onPick, selected) {
 }
 
 function wireChips(container, onPick) {
+  if (!container) return;
   container.addEventListener('click', (e) => {
     const b = e.target.closest('.chip');
     if (!b) return;
@@ -91,23 +127,54 @@ function wireChips(container, onPick) {
   });
 }
 
-const setChecked = (container, value) => {
+function setChecked(container, value) {
+  if (!container) return;
   for (const c of container.querySelectorAll('.chip')) c.setAttribute('aria-checked', String(c.dataset.value === value));
-};
+  syncThumb(container);
+}
 
+// ---------------------------------------------------------------------------
+// Start screen
+// ---------------------------------------------------------------------------
 function setOrigin(origin) {
   state.origin = origin;
   updateStartButton();
 }
 
+const needsOrigin = () => state.mode === 'quiz' && state.keepClose;
+const startBlocked = () => needsOrigin() && !state.origin;
+
 // The location question only appears (and is required) with "Keep it close".
 function updateStartButton() {
-  const needsOrigin = state.mode === 'quiz' && state.keepClose;
-  const blocked = needsOrigin && !state.origin;
-  $('btn-start').disabled = blocked;
-  $('start-hint').hidden = !blocked;
-  $('start-hint').textContent = 'Pick a starting point so we can keep it close.';
-  $('origin-section').hidden = !needsOrigin;
+  const btn = $('btn-start');
+  const hint = $('start-hint');
+  const section = $('origin-section');
+  if (btn) btn.setAttribute('aria-disabled', String(startBlocked()));
+  if (hint) {
+    hint.hidden = !startBlocked();
+    hint.textContent = 'Pick a starting point so we can keep it close.';
+  }
+  if (section) {
+    const open = needsOrigin();
+    section.classList.toggle('open', open);
+    section.setAttribute('aria-hidden', String(!open));
+    section.inert = !open;
+  }
+}
+
+function updateModeUI() {
+  const wild = state.mode === 'wild';
+  setChecked($('mode-options'), state.mode);
+  const card = $('players-card');
+  if (card) card.hidden = wild;
+  updateStartButton();
+  if ($('btn-start')) $('btn-start').textContent = wild ? 'Spin the wild wheel' : "Let's play";
+  if ($('hero-sub')) {
+    $('hero-sub').textContent = wild
+      ? 'Feeling lucky? Skip the quiz and let chaos pick.'
+      : 'Pass the phone around, answer six taps each, and let the wheel decide.';
+  }
+  requestAnimationFrame(syncAllThumbs);
 }
 
 function initStart() {
@@ -121,15 +188,18 @@ function initStart() {
 
   chipGroup($('player-options'), [2, 3, 4, 5, 6].map((n) => [String(n), String(n)]), (v) => {
     state.playerCount = Number(v);
-  }, '2');
+  }, String(state.playerCount));
 
   wireChips($('car-options'), (v) => { state.hasCar = v === 'yes'; });
 
   wireChips($('walk-options'), (v) => {
     state.keepClose = v === 'close';
-    $('walk-hint').textContent = state.keepClose
-      ? 'Closer spots win, especially when the weather is bad.'
-      : "Distance won't count.";
+    const hint = $('walk-hint');
+    if (hint) {
+      hint.textContent = state.keepClose
+        ? 'Closer spots win, especially when the weather is bad.'
+        : "Distance won't count.";
+    }
     updateStartButton();
   });
 
@@ -137,7 +207,7 @@ function initStart() {
     state.wheelSize = Number(v);
   }, String(state.wheelSize));
 
-  $('btn-locate').addEventListener('click', async () => {
+  on('btn-locate', 'click', async () => {
     const btn = $('btn-locate');
     const st = $('locate-status');
     btn.disabled = true;
@@ -153,43 +223,55 @@ function initStart() {
     } else {
       st.className = 'status warn';
       st.textContent = loc.reason;
-      $('court-options').querySelector('.chip')?.focus();
+      $('court-options')?.querySelector('.chip')?.focus();
     }
   });
 
   wireChips($('mode-options'), (v) => { state.mode = v; updateModeUI(); });
-  updateModeUI();
 
-  $('btn-start').addEventListener('click', () => {
-    if ($('btn-start').disabled) return;
+  on('btn-start', 'click', () => {
+    if (startBlocked()) {
+      // Not ready: shake the button and point at what's missing.
+      const btn = $('btn-start');
+      btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
+      const box = document.querySelector('.origin-box');
+      if (box) {
+        box.classList.remove('flash'); void box.offsetWidth; box.classList.add('flash');
+        box.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
+      }
+      return;
+    }
     if (state.mode === 'wild') { startWild(); return; }
     state.players = Array.from({ length: state.playerCount }, (_, i) => ({ name: `Player ${i + 1}`, answers: {} }));
     state.current = 0;
     showHandoff();
   });
 
+  updateModeUI();
+
   weatherPromise.then((w) => {
     weather = w;
-    renderWeatherCard($('weather-card'), w);
+    const card = $('weather-card');
+    if (card) renderWeatherCard(card, w);
   });
 }
 
 // ---------------------------------------------------------------------------
 // Hand-off + quiz
 // ---------------------------------------------------------------------------
-function showHandoff() {
+function showHandoff(dir = 'fwd') {
   const i = state.current;
   const n = state.players.length;
   $('handoff-kicker').textContent = `Player ${i + 1} of ${n}`;
-  $('handoff-title').textContent = i === 0 ? "You're up first" : 'Pass the phone to the next person';
+  $('handoff-title').textContent = i === 0 ? "You're up first" : 'Pass the phone!';
   const input = $('name-input');
   const existing = state.players[i].name;
   input.value = existing === `Player ${i + 1}` ? '' : existing; // keep the name if they came Back
   input.placeholder = `Player ${i + 1}`;
-  show('screen-handoff');
+  show('screen-handoff', dir);
 }
 
-$('name-form').addEventListener('submit', (e) => {
+on('name-form', 'submit', (e) => {
   e.preventDefault();
   const name = $('name-input').value.trim();
   const p = state.players[state.current];
@@ -200,45 +282,55 @@ $('name-form').addEventListener('submit', (e) => {
   showQuestion();
 });
 
-function showQuestion() {
+function showQuestion(dir = 'fwd') {
   const q = QUESTIONS[state.q];
   const p = state.players[state.current];
   $('q-who').textContent = `${p.name} · ${state.q + 1}/${QUESTIONS.length}`;
-  $('q-text').textContent = q.text;
+  const qt = $('q-text');
+  qt.textContent = q.text;
+  qt.classList.remove('swap'); void qt.offsetWidth; qt.classList.add('swap');
 
   const prog = $('q-progress');
-  prog.innerHTML = '';
-  QUESTIONS.forEach((_, i) => {
-    const s = document.createElement('span');
-    if (i <= state.q) s.className = 'done';
-    prog.append(s);
-  });
+  // Reuse the bars so the fill animates from the previous question.
+  if (prog.children.length !== QUESTIONS.length) {
+    prog.innerHTML = '';
+    QUESTIONS.forEach(() => prog.append(document.createElement('span')));
+  }
+  [...prog.children].forEach((s, i) => s.classList.toggle('done', i <= state.q));
 
   const box = $('q-options');
   box.innerHTML = '';
-  for (const [value, emoji, label] of q.options) {
+  q.options.forEach(([value, emoji, label], i) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'option' + (p.answers[q.key] === value ? ' picked' : '');
+    b.style.setProperty('--i', i);
     const em = document.createElement('span');
     em.className = 'emoji';
     em.setAttribute('aria-hidden', 'true');
     em.textContent = emoji;
     const tx = document.createElement('span');
     tx.textContent = label;
-    b.append(em, tx);
+    const check = document.createElement('span');
+    check.className = 'check';
+    check.setAttribute('aria-hidden', 'true');
+    check.textContent = '✓';
+    b.append(em, tx, check);
     b.addEventListener('click', () => answer(q.key, value, b));
     box.append(b);
-  }
-  show('screen-question');
+  });
+
+  // Only slide the whole screen when arriving from somewhere else.
+  if ($('screen-question').hidden) show('screen-question', dir);
+  else { window.scrollTo(0, 0); qt.focus({ preventScroll: true }); }
 }
 
 let answering = false;
 function answer(key, value, btn) {
-  if (answering) return; // ignore double taps during the short highlight
+  if (answering) return; // ignore double taps during the highlight
   answering = true;
   state.players[state.current].answers[key] = value;
-  btn.classList.add('picked');
+  for (const o of document.querySelectorAll('#q-options .option')) o.classList.toggle('picked', o === btn);
   setTimeout(() => {
     answering = false;
     if (state.q < QUESTIONS.length - 1) {
@@ -250,12 +342,12 @@ function answer(key, value, btn) {
     } else {
       finishQuiz();
     }
-  }, 180);
+  }, 320);
 }
 
-$('btn-back').addEventListener('click', () => {
-  if (state.q > 0) { state.q--; showQuestion(); }
-  else showHandoff();
+on('btn-back', 'click', () => {
+  if (state.q > 0) { state.q--; showQuestion('back'); }
+  else showHandoff('back');
 });
 
 // ---------------------------------------------------------------------------
@@ -280,17 +372,6 @@ async function finishQuiz() {
 }
 
 const wheelSize = () => (state.mode === 'wild' ? WILD_SLICES : state.wheelSize);
-
-function updateModeUI() {
-  const wild = state.mode === 'wild';
-  setChecked($('mode-options'), state.mode);
-  $('players-card').hidden = wild;
-  updateStartButton();
-  $('btn-start').textContent = wild ? '🎲 Spin the wild wheel' : "Let's go";
-  $('hero-sub').textContent = wild
-    ? 'Feeling lucky? Skip the quiz and let chaos pick.'
-    : 'Pass the phone around, answer six taps each, and let the wheel decide.';
-}
 
 async function startWild() {
   if (!weather) weather = await weatherPromise;
@@ -323,16 +404,17 @@ function showWheel() {
   wheel = createWheel($('wheel'), labels, shares);
 
   $('wheel-title').textContent = wild
-    ? (state.page === 0 ? 'The wild wheel 🎲' : 'Wild wheel, round 2 🎲')
+    ? (state.page === 0 ? 'The wild wheel' : 'Wild wheel · round 2')
     : (state.page === 0 ? `Your top ${c.length}` : `The next ${c.length}`);
   $('wheel-sub').textContent = wild ? 'No quiz, no logic. Every slice has the same odds.' : 'Bigger slice = better fit for the group.';
   const legend = $('wheel-legend');
   legend.innerHTML = '';
   c.forEach((e, i) => {
     const li = document.createElement('li');
+    li.style.setProperty('--i', i);
     const sw = document.createElement('span');
     sw.className = 'swatch';
-    sw.style.background = `var(${SLICE_VARS[i]})`;
+    sw.style.background = `var(${SLICE_VARS[i % SLICE_VARS.length]})`;
     const name = document.createElement('span');
     name.textContent = e.spot.name;
     const pct = document.createElement('span');
@@ -343,23 +425,55 @@ function showWheel() {
   });
 
   $('btn-spin').disabled = false;
-  $('btn-spin').textContent = 'Spin!';
+  $('btn-spin').textContent = 'Spin the wheel';
+  syncSoundButton();
   show('screen-wheel');
 }
 
-$('btn-spin').addEventListener('click', async () => {
+on('btn-spin', 'click', async () => {
   if (spinning || !wheel) return;
   spinning = true;
   $('btn-spin').disabled = true;
   $('btn-spin').textContent = 'Spinning…';
+  $('wheel').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
   const idx = await wheel.spin();
   spinning = false;
-  setTimeout(() => showResult(state.candidates[idx]), 500);
+  $('btn-spin').textContent = 'We have a winner!';
+  setTimeout(() => showResult(state.candidates[idx]), 1100);
 });
 
+function syncSoundButton() {
+  const b = $('btn-sound');
+  if (!b) return;
+  b.textContent = sound.on ? '🔊' : '🔇';
+  b.setAttribute('aria-pressed', String(sound.on));
+  b.setAttribute('aria-label', sound.on ? 'Sound on' : 'Sound off');
+}
+on('btn-sound', 'click', () => { sound.on = !sound.on; syncSoundButton(); });
+
 // ---------------------------------------------------------------------------
-// Result
+// Result: dramatic reveal + confetti
 // ---------------------------------------------------------------------------
+function confetti() {
+  const box = $('confetti');
+  if (!box || reducedMotion()) return;
+  const colors = ['#cfb991', '#daaa00', '#ebd99f', '#8e6f3e', '#ffffff', '#ddb945'];
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 110; i++) {
+    const p = document.createElement('i');
+    p.style.left = `${Math.random() * 100}%`;
+    p.style.background = colors[i % colors.length];
+    p.style.setProperty('--dx', `${(Math.random() - 0.5) * 160}px`);
+    p.style.setProperty('--r', `${(Math.random() - 0.5) * 1080}deg`);
+    p.style.setProperty('--t', `${2 + Math.random() * 1.6}s`);
+    p.style.setProperty('--d', `${Math.random() * 0.35}s`);
+    if (i % 3 === 0) { p.style.width = '7px'; p.style.height = '7px'; p.style.borderRadius = '50%'; }
+    frag.append(p);
+  }
+  box.append(frag);
+  setTimeout(() => { box.innerHTML = ''; }, 4200);
+}
+
 function mapsUrl(spot) {
   if (spot.requiresCar) {
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.mapsQuery)}`;
@@ -386,7 +500,7 @@ function showResult(entry, note) {
   const facts = $('result-facts');
   facts.innerHTML = '';
   const fact = (t) => { const li = document.createElement('li'); li.textContent = t; facts.append(li); };
-  if (entry.walkMin != null) {
+  if (entry.walkMin != null && state.origin) {
     fact(spot.requiresCar ? `~${entry.walkMin} min walk · short drive` : `~${entry.walkMin} min walk from ${state.origin.label}`);
   }
   for (const r of entry.activeRules) fact(`Heads up: ${r.why}`);
@@ -423,22 +537,23 @@ function showResult(entry, note) {
     meta.className = 'meta';
     const bits = [`score ${e.score.toFixed(1)}`];
     if (e.miserableCount) bits.push(`${e.miserableCount} unhappy`);
-    if (e.walkMin != null && !e.spot.requiresCar) bits.push(`${e.walkMin} min`);
+    if (e.walkMin != null && !e.spot.requiresCar && state.origin) bits.push(`${e.walkMin} min`);
     meta.textContent = `(${bits.join(', ')})`;
     li.append(meta);
     ol.append(li);
   }
 
   show('screen-result');
+  setTimeout(confetti, 550); // in time with the name reveal
 }
 
-$('btn-respin').addEventListener('click', () => {
+on('btn-respin', 'click', () => {
   if (state.rerollUsed) return;
   state.rerollUsed = true;
   showWheel();
 });
 
-$('btn-next3').addEventListener('click', () => {
+on('btn-next3', 'click', () => {
   if (state.rerollUsed) return;
   state.rerollUsed = true;
   state.page += 1;
@@ -446,25 +561,14 @@ $('btn-next3').addEventListener('click', () => {
 });
 
 function restart() {
-  const keepOrigin = state.origin;
-  const keepCount = state.playerCount;
-  const keepCar = state.hasCar;
-  const keepMode = state.mode;
-  const keepClose = state.keepClose;
-  const keepSize = state.wheelSize;
-  state = fresh();
-  state.mode = keepMode;
-  state.keepClose = keepClose;
-  state.wheelSize = keepSize;
+  const keep = (({ origin, playerCount, hasCar, mode, keepClose, wheelSize }) => ({ origin, playerCount, hasCar, mode, keepClose, wheelSize }))(state);
   // Keep the start-screen choices: it's usually the same group.
-  state.origin = keepOrigin;
-  state.playerCount = keepCount;
-  state.hasCar = keepCar;
-  setOrigin(keepOrigin);
-  show('screen-start');
+  state = { ...fresh(), ...keep };
+  setOrigin(keep.origin);
+  show('screen-start', 'back');
 }
 
-$('btn-restart').addEventListener('click', restart);
+on('btn-restart', 'click', restart);
 for (const b of document.querySelectorAll('.js-restart')) b.addEventListener('click', restart);
 
 initStart();
