@@ -100,15 +100,14 @@ function setOrigin(origin) {
   updateStartButton();
 }
 
-// A starting point is only required when distance counts ("Keep it close").
-// Otherwise it's optional and just adds walk times + directions.
+// The location question only appears (and is required) with "Keep it close".
 function updateStartButton() {
   const needsOrigin = state.mode === 'quiz' && state.keepClose;
   const blocked = needsOrigin && !state.origin;
   $('btn-start').disabled = blocked;
   $('start-hint').hidden = !blocked;
   $('start-hint').textContent = 'Pick a starting point so we can keep it close.';
-  $('origin-optional').hidden = needsOrigin;
+  $('origin-section').hidden = !needsOrigin;
 }
 
 function initStart() {

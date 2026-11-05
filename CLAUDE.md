@@ -12,7 +12,7 @@ A web app that ends the "idk, where do you want to study?" debate. Friends finis
 - Weather: Open-Meteo API (free, no key). West Lafayette ≈ 40.4237, -86.9212.
 
 ## Flow
-1. **Start screen**: get the starting point with a "Use my location" button (browser geolocation). If location is denied or unavailable, fall back to choosing the dining court you're leaving from (Earhart, Ford, Hillenbrand, Wiley, Windsor). Also choose the number of players (2–6) and answer "Do we have a car / willing to walk far?" (yes/no).
+1. **Start screen**: choose the mode (quiz or wild), the number of players (2–6), "Feel like walking?" (anywhere's fine / keep it close), spots on the wheel (3–6), and "Up for Downtown?" (car or long walk). **Only if they pick "Keep it close"**, ask for the starting point with a "Use my location" button (browser geolocation). If location is denied or unavailable, fall back to choosing the dining court you're leaving from (Earhart, Ford, Hillenbrand, Wiley, Windsor).
 2. **Pass-the-phone quiz**: each player enters a name and taps through the questions. A "pass to next person" screen in between hides the previous answers.
 3. **Scoring** (see below), using the current weather plus the current day and time.
 4. **Wheel**: the top spots (group picks 3–6, default 5; at most one per building), with slices weighted by score so the best fit is likelier. Spin animation.

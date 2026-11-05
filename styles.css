@@ -121,8 +121,8 @@ h1:focus { outline: none; }
 .chips-two { grid-template-columns: 1fr 1fr; }
 .chips-four { grid-template-columns: repeat(4, 1fr); }
 .h2-gap { margin-top: 20px; }
-.optional { font-size: 0.75rem; font-weight: 600; color: var(--muted); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; }
-.optional[hidden] { display: none; }
+.origin-section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--border); }
+.origin-section[hidden] { display: none; }
 #start-hint[hidden] { display: none; }
 .hint-left { text-align: left; margin-top: 8px; }
 .hint-under { margin: -4px 0 10px; }

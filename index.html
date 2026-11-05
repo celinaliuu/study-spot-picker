@@ -29,14 +29,6 @@
         </div>
       </div>
 
-      <div class="card">
-        <h2>Where are you now? <span id="origin-optional" class="optional">optional</span></h2>
-        <button id="btn-locate" class="btn btn-secondary btn-block" type="button">📍 Use my location</button>
-        <p id="locate-status" class="status" aria-live="polite"></p>
-        <p class="label">…or pick the dining court you're leaving</p>
-        <div id="court-options" class="chips" role="radiogroup" aria-label="Dining court"></div>
-      </div>
-
       <div class="card" id="players-card">
         <h2>How many of you?</h2>
         <div id="player-options" class="chips chips-numbers" role="radiogroup" aria-label="Number of players"></div>
@@ -47,6 +39,15 @@
           <button type="button" class="chip" role="radio" data-value="close" aria-checked="false">🛋️ Keep it close</button>
         </div>
         <p id="walk-hint" class="hint hint-left">Distance won't count.</p>
+
+        <!-- Only shown with "Keep it close" -->
+        <div id="origin-section" class="origin-section" hidden>
+          <h2>Where are you now?</h2>
+          <button id="btn-locate" class="btn btn-secondary btn-block" type="button">📍 Use my location</button>
+          <p id="locate-status" class="status" aria-live="polite"></p>
+          <p class="label">…or pick the dining court you're leaving</p>
+          <div id="court-options" class="chips" role="radiogroup" aria-label="Dining court"></div>
+        </div>
 
         <h2 class="h2-gap">Spots on the wheel</h2>
         <div id="size-options" class="chips chips-numbers chips-four" role="radiogroup" aria-label="Spots on the wheel"></div>
