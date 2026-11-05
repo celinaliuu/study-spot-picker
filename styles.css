@@ -402,7 +402,8 @@ h2 { font-size: 1.35rem; margin: 0 0 12px; color: var(--gold); text-transform: u
 /* ---------------------------------------------------------------------------
    Opening page: cute mini wheel, floating study things, marquee title
    --------------------------------------------------------------------------- */
-.intro { gap: 18px; }
+.intro { gap: 26px; }
+.intro-stage { transform: scale(1.1); }
 .intro-stage { position: relative; width: 230px; height: 230px; margin: 0 auto; }
 
 .mini-wheel { position: absolute; inset: 25px; animation: bob 3.4s ease-in-out infinite; }
@@ -457,23 +458,10 @@ h2 { font-size: 1.35rem; margin: 0 0 12px; color: var(--gold); text-transform: u
   opacity: 0.85; animation: bulbs 0.9s steps(1) infinite; pointer-events: none;
 }
 @keyframes bulbs { 50% { border-color: #6b5530; opacity: 0.6; } }
-.marquee-top { margin: 0 0 4px; font-family: var(--font-display); color: var(--gold); letter-spacing: 0.25em; font-size: 1rem; }
-.marquee-title { font-size: clamp(3.2rem, 17vw, 4.6rem); line-height: 0.9; color: var(--text); text-shadow: 0 3px 0 #3a2c14; }
+.marquee-title { font-size: clamp(3.6rem, 19vw, 5.2rem); line-height: 0.88; color: var(--text); text-shadow: 0 3px 0 #3a2c14; }
 .marquee-title span { color: #f3dfa6; text-shadow: 0 3px 0 #5c4626, 0 0 24px rgb(207 185 145 / 0.6); }
-.intro-tag { margin: 0; color: var(--gold-dust); font-size: 1.02rem; }
-.intro-tag em { font-style: italic; color: var(--gold); }
-.intro-steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.intro-steps li {
-  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px; border-radius: 14px;
-  background: rgb(207 185 145 / 0.06); border: 1px solid var(--line); font-size: 0.85rem; color: var(--text);
-  animation: tile-in 0.5s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 90ms + 300ms);
-}
-.intro-steps li:nth-child(2) { --i: 1; }
-.intro-steps li:nth-child(3) { --i: 2; }
-.intro-steps span { font-size: 1.5rem; }
 .btn-bounce { animation: btn-bounce 2s var(--ease-spring) infinite; }
 @keyframes btn-bounce { 0%, 70%, 100% { transform: translateY(0); } 80% { transform: translateY(-6px); } 90% { transform: translateY(0); } }
-.intro-foot { margin: 0; color: var(--muted); font-size: 0.8rem; }
 
 /* --- Reduced motion: keep it calm ------------------------------------------ */
 @media (prefers-reduced-motion: reduce) {

@@ -20,6 +20,19 @@ If something does break, a gold banner at the top of the page shows the error.
 - On a **phone**, location needs **https**. Opening `http://<your-mac's-IP>:8000` works, but location is blocked, so you'll pick a dining court instead. Host it on GitHub Pages to get https.
 - On a Mac, the browser needs Location Services on: System Settings → Privacy & Security → Location Services.
 
+## Deploying (GitHub Pages)
+
+Live at https://celinaliuu.github.io/study-spot-picker/. Pushing to `main` redeploys in about a minute.
+
+Before each push, stamp a new version so phones don't mix cached old files with the new page:
+
+```sh
+python3 scripts/bump-version.py
+git commit -am "…" && git push
+```
+
+GitHub Pages lets browsers cache files for 10 minutes. Without the stamp, a phone can load the new `index.html` with an old `app.js`, and buttons break. The script also warns if a new JS module isn't in the import map in `index.html`.
+
 ## Modes
 
 - **🎯 Fit the group**: everyone takes the quiz, and the wheel spins between the best-fitting spots. Choose 3–6 spots on the wheel (default 5).
