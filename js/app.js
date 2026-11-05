@@ -350,6 +350,26 @@ on('btn-back', 'click', () => {
   else showHandoff('back');
 });
 
+/** Jump back to a player's last question (their answers are kept). */
+function backToLastQuestion(playerIndex) {
+  state.current = playerIndex;
+  state.q = QUESTIONS.length - 1;
+  showQuestion('back');
+}
+
+// Pass-the-phone screen: player 1 → start screen; others → previous player's last question.
+on('btn-handoff-back', 'click', () => {
+  if (state.current === 0) show('screen-start', 'back');
+  else backToLastQuestion(state.current - 1);
+});
+
+// Wheel: quiz → last player's last question; wild → start screen. Not mid-spin.
+on('btn-wheel-back', 'click', () => {
+  if (spinning) return;
+  if (state.mode === 'wild' || !state.players.length) show('screen-start', 'back');
+  else backToLastQuestion(state.players.length - 1);
+});
+
 // ---------------------------------------------------------------------------
 // Scoring → wheel
 // ---------------------------------------------------------------------------
@@ -425,6 +445,7 @@ function showWheel() {
   });
 
   $('btn-spin').disabled = false;
+  if ($('btn-wheel-back')) $('btn-wheel-back').disabled = false;
   $('btn-spin').textContent = 'Spin the wheel';
   syncSoundButton();
   show('screen-wheel');
@@ -434,6 +455,7 @@ on('btn-spin', 'click', async () => {
   if (spinning || !wheel) return;
   spinning = true;
   $('btn-spin').disabled = true;
+  if ($('btn-wheel-back')) $('btn-wheel-back').disabled = true;
   $('btn-spin').textContent = 'Spinning…';
   $('wheel').scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
   const idx = await wheel.spin();
