@@ -297,25 +297,33 @@ h2 { font-size: 1.35rem; margin: 0 0 12px; color: var(--gold); text-transform: u
   background: radial-gradient(120% 90% at 50% 0%, #2a2112 0%, #0c0b09 60%);
   border: 2px solid var(--gold);
   box-shadow: 0 0 0 6px rgb(207 185 145 / 0.08), 0 0 60px rgb(207 185 145 / 0.3);
-  animation: reveal-in 0.7s var(--ease-spring) both;
+  isolation: isolate;
+  animation: reveal-in 0.6s var(--ease-spring) both;
 }
-@keyframes reveal-in { from { transform: scale(0.6) rotateX(30deg); opacity: 0; } }
+/* 2D only: 3D transforms (rotateX) make iOS Safari rasterize the text blurry. */
+@keyframes reveal-in { from { transform: scale(0.85); opacity: 0; } }
 .reveal-rays {
-  position: absolute; inset: -50%;
+  position: absolute; inset: -50%; z-index: 0;
   background: repeating-conic-gradient(from 0deg, rgb(207 185 145 / 0.10) 0deg 8deg, transparent 8deg 20deg);
-  animation: rays 18s linear infinite; pointer-events: none;
+  animation: rays 18s linear infinite; pointer-events: none; will-change: transform;
 }
 @keyframes rays { to { transform: rotate(360deg); } }
-.reveal > :not(.reveal-rays) { position: relative; }
+.reveal > :not(.reveal-rays) { position: relative; z-index: 1; }
 .reveal-kicker { margin: 0; color: var(--gold); font-size: 1.3rem; letter-spacing: 0.25em; animation: fade-up 0.5s 0.2s var(--ease-out) both; }
 .result-name {
   font-size: clamp(2.8rem, 13vw, 4.4rem); line-height: 0.95; margin: 10px 0 6px; text-transform: uppercase;
-  background: linear-gradient(180deg, #fff6d6, var(--gold) 55%, var(--gold-aged));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 0 18px rgb(207 185 145 / 0.45));
-  animation: name-in 0.8s 0.55s var(--ease-spring) both;
+  /* Solid color + text-shadow glow. Gradient-clipped text with filters renders
+     blurry or invisible in iOS Safari, so none of that here. */
+  color: #f3dfa6;
+  text-shadow: 0 2px 0 #5c4626, 0 0 22px rgb(207 185 145 / 0.55);
+  animation: name-in 0.9s 0.55s var(--ease-out) both;
 }
-@keyframes name-in { from { opacity: 0; transform: scale(2.2); filter: blur(10px); } }
+/* Flash of light, then settle: only opacity, a small 2D slide and text-shadow. */
+@keyframes name-in {
+  0% { opacity: 0; transform: translateY(14px); text-shadow: 0 0 0 transparent; }
+  45% { opacity: 1; transform: none; color: #fffbe9; text-shadow: 0 0 6px #fff, 0 0 40px #ffe7a0, 0 0 80px rgb(218 170 0 / 0.8); }
+  100% { opacity: 1; transform: none; color: #f3dfa6; text-shadow: 0 2px 0 #5c4626, 0 0 22px rgb(207 185 145 / 0.55); }
+}
 .vibe { margin: 4px 0 0; color: var(--gold-dust); font-size: 1rem; font-style: italic; animation: fade-up 0.5s 1.1s var(--ease-out) both; }
 @keyframes fade-up { from { opacity: 0; transform: translateY(10px); } }
 .why { font-size: 1.12rem; margin: 0; color: var(--text); animation: fade-up 0.5s 1.3s var(--ease-out) both; }
