@@ -28,8 +28,45 @@
 
   <main id="app">
 
+    <!-- 0. Opening page -->
+    <section id="screen-intro" class="screen screen-center intro">
+      <div class="intro-stage" aria-hidden="true">
+        <span class="floaty f1">📚</span>
+        <span class="floaty f2">☕</span>
+        <span class="floaty f3">🎧</span>
+        <span class="floaty f4">✏️</span>
+        <span class="floaty f5">🚂</span>
+        <span class="floaty f6">✨</span>
+        <div class="mini-wheel">
+          <div class="mini-pointer"></div>
+          <div class="mini-disc"></div>
+          <div class="mini-face">
+            <span class="eye"></span><span class="eye"></span>
+            <span class="mouth"></span>
+            <span class="blush"></span><span class="blush"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="marquee">
+        <p class="marquee-top">★ Boilermaker Edition ★</p>
+        <h1 class="marquee-title" tabindex="-1">Study Spot<br><span>Showdown</span></h1>
+      </div>
+
+      <p class="intro-tag">Ending the “idk, where do <em>you</em> wanna study?” debate, one spin at a time.</p>
+
+      <ul class="intro-steps" aria-label="How it works">
+        <li><span>👯</span>2–6 friends</li>
+        <li><span>📱</span>pass one phone</li>
+        <li><span>🎡</span>spin to win</li>
+      </ul>
+
+      <button id="btn-intro" class="btn btn-primary btn-block btn-big btn-bounce" type="button">Tap to play</button>
+      <p class="intro-foot">made for Purdue · hammer down 🔨</p>
+    </section>
+
     <!-- 1. Start -->
-    <section id="screen-start" class="screen">
+    <section id="screen-start" class="screen" hidden>
       <header class="hero">
         <p class="eyebrow">★ Boilermaker Edition ★</p>
         <h1 class="title">Where are we <span class="hl">studying</span>?</h1>

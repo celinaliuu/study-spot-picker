@@ -590,6 +590,9 @@ function restart() {
   show('screen-start', 'back');
 }
 
+// Opening page → start screen
+on('btn-intro', 'click', () => show('screen-start'));
+
 on('btn-restart', 'click', restart);
 for (const b of document.querySelectorAll('.js-restart')) b.addEventListener('click', restart);
 
