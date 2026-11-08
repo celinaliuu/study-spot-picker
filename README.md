@@ -41,7 +41,7 @@ GitHub Pages lets browsers cache files for 10 minutes. Without the stamp, a phon
 ## Editing spots
 
 Everything tweakable is in [`js/spots.js`](js/spots.js): tags, coordinates, and scoring weights (`CONFIG`).
-Opening hours are not checked: every spot is assumed open except Burton Morgan, which is closed on weekends (`closedDays`).
+Opening hours are only checked for spots with an `hours` field (the Stew library and basement; edit `HOURS` in `js/spots.js` each semester). Burton Morgan is closed on weekends (`closedDays`). Everything else is assumed open.
 
 ## How scoring works (short version)
 
@@ -96,6 +96,7 @@ Building centers from OpenStreetMap building outlines (checked November 2026) or
 | Chaney-Hale Hall of Science | spot | 40.42859, -86.91552 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42859,-86.91552) |
 | Downtown Lafayette (coffee shops / Tippecanoe library) | spot | 40.41687, -86.88931 | OpenStreetMap | [map](https://www.google.com/maps?q=40.41687,-86.88931) |
 | Materials and Electrical Engineering Building | spot | 40.42934, -86.91267 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42934,-86.91267) |
+| Lawson Computer Science Building | spot | 40.42778, -86.91699 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42778,-86.91699) |
 | Burton D. Morgan Center for Entrepreneurship | spot | 40.42375, -86.92285 | OpenStreetMap | [map](https://www.google.com/maps?q=40.42375,-86.92285) |
 | Meredith South | spot | 40.42560, -86.92317 | OpenStreetMap | [map](https://www.google.com/maps?q=40.4256,-86.92317) |
 

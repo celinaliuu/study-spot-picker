@@ -3,6 +3,7 @@
 import { SPOTS, DINING_COURTS } from './spots.js';
 import { rankSpots, whyLine, wheelPage } from './scoring.js';
 import { getLocation } from './geo.js';
+import { hoursToday } from './hours.js';
 import { fetchWeather } from './weather.js';
 import { renderWeatherCard } from './weather-card.js';
 import { createWheel, wheelShares, sound } from './wheel.js';
@@ -525,6 +526,8 @@ function showResult(entry, note) {
   if (entry.walkMin != null && state.origin) {
     fact(spot.requiresCar ? `~${entry.walkMin} min walk · short drive` : `~${entry.walkMin} min walk from ${state.origin.label}`);
   }
+  const hrs = hoursToday(spot, state.now ?? new Date());
+  if (hrs) fact(`🕘 ${hrs}`);
   for (const r of entry.activeRules) fact(`Heads up: ${r.why}`);
 
   const hu = $('result-heads-up');

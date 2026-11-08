@@ -5,12 +5,13 @@ import { SPOTS, DINING_COURTS, NOISE } from './spots.js';
 import { rankSpots, effectiveNoise, whyLine, who, wheelPage } from './scoring.js';
 import { wheelShares, pickIndex, targetRotation, sliceAngles } from './wheel.js';
 import { walkMinutes } from './geo.js';
+import { hoursToday } from './hours.js';
 import { classifyWeather } from './weather.js';
 import { buildWildPool, wildLine, shuffle } from './wild.js';
 
 // Mon 2 Nov 2026 + offset → a date on the given weekday (0 = Sun … 6 = Sat).
 const at = (weekday, h, m = 0) => new Date(2026, 10, 2 + ((weekday + 6) % 7), h, m);
-const SUN = 0, MON = 1, FRI = 5, SAT = 6;
+const SUN = 0, MON = 1, TUE = 2, WED = 3, FRI = 5, SAT = 6;
 
 const byId = Object.fromEntries(SPOTS.map((s) => [s.id, s]));
 const court = (id) => DINING_COURTS.find((d) => d.id === id);
@@ -44,12 +45,33 @@ test('Downtown needs a car', () => {
   assert(!ids(run({ hasCar: false })).includes('downtown'));
   assert(ids(run({ hasCar: true })).includes('downtown'));
 });
-test('No opening-hours filter: every spot except Burton Morgan (weekend) / Downtown (no car) is kept at any hour', () => {
-  for (const [day, h, m] of [[MON, 3, 0], [FRI, 16, 30], [SUN, 23, 30], [SAT, 2, 0], [MON, 0, 10]]) {
+test('Only spots with hours (Stew) get filtered by time; everything else is kept at any hour', () => {
+  for (const [day, h, m] of [[MON, 3, 0], [SAT, 2, 0], [MON, 0, 10], [FRI, 23, 0]]) {
     const r = run({ now: at(day, h, m), hasCar: true });
-    const expected = SPOTS.length - (day === SAT || day === SUN ? 1 : 0);
-    assert(r.ranked.length === expected, `${day} ${h}:${m} → ${r.ranked.length}/${expected}; removed ${r.removed.map((x) => x.spot.id)}`);
+    const removed = r.removed.map((x) => x.spot.id).sort();
+    const expected = ['stew', 'stew-basement', ...(day === SAT || day === SUN ? ['burton-morgan'] : [])].sort();
+    assert(removed.join() === expected.join(), `${day} ${h}:${m} removed ${removed}`);
   }
+});
+test('Stew library hours: open / closing soon / closed', () => {
+  const has = (now) => ids(run({ now })).includes('stew');
+  assert(has(at(MON, 9)), 'Mon 9am open');
+  assert(has(at(FRI, 15)), 'Fri 3pm open (closes 6pm)');
+  assert(!has(at(FRI, 17, 30)), 'Fri 5:30pm closes in 30 min');
+  assert(!has(at(SAT, 12)), 'Sat noon not open yet (1pm)');
+  assert(has(at(SAT, 14)), 'Sat 2pm open');
+  assert(has(at(SUN, 23)), 'Sun 11pm open (closes 12am)');
+  assert(!has(at(SUN, 23, 30)), 'Sun 11:30pm closes in 30 min');
+  assert(!has(at(MON, 7, 30)), 'Mon 7:30am not open yet');
+  assert(hoursToday(byId.stew, at(FRI, 10)) === 'Open today 8am–6pm');
+  assert(hoursToday(byId.walc, at(FRI, 10)) === null, 'spots without hours show nothing');
+});
+test('Lawson: busy on school days, quiet on weekends; On-the-GO food only on weekdays', () => {
+  assert(effectiveNoise(byId.lawson, at(TUE, 14)) === NOISE.BUZZY);
+  assert(effectiveNoise(byId.lawson, at(SAT, 14)) === NOISE.QUIET);
+  assert(effectiveNoise(byId.lawson, at(SUN, 20)) === NOISE.QUIET);
+  const coffee = (now) => entry(run({ now }), 'lawson').ctx.coffee;
+  assert(coffee(at(WED, 12)) === 1 && coffee(at(SAT, 12)) === 0);
 });
 
 // --- Time of day ----------------------------------------------------------

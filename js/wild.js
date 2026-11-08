@@ -38,8 +38,7 @@ const LINES = [
   "You asked for wild. Here's wild.",
   'The universe said {spot}. Who are we to argue?',
   'Fate rolled the dice and the dice said {spot}.',
-  'Plot twist: {spot}. Main character energy.',
-  "New study spot just dropped: {spot}. It's giving adventure.",
+  "The wheel picked {spot}. Let's go.",
 ];
 
 /** Random fun line + the usual weather sentence. */

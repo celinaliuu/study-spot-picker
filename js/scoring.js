@@ -1,13 +1,14 @@
 // Scoring engine. Pure functions, no DOM: rankSpots() is the entry point.
 //
 // Pipeline per spot:
-//   1. hard filters (closed days, needs a car)
+//   1. hard filters (closed days, library hours, needs a car)
 //   2. per-player utility from quiz answers
 //   3. misery check per player ("avoid misery over majority")
 //   4. group score = mean utility − misery penalty + group-level modifiers
 //   5. sort: fewest miserable players first, then highest score
 import { CONFIG, NOISE } from './spots.js';
 import { walkMinutes } from './geo.js';
+import { minutesUntilClose } from './hours.js';
 
 // Answer values used by the quiz (app.js) and here.
 export const ANSWERS = {
@@ -25,10 +26,15 @@ const SESSION_WEIGHT = { quick: 0, few: 0.5, late: 1 };
 
 const inHourWindow = (h, from, to) => (from <= to ? h >= from && h < to : h >= from || h < to);
 
-/** Noise level at this time of day (e.g. WALC goes quiet after 7pm). */
+/** Noise level right now (e.g. WALC goes quiet after 7pm, Lawson on weekends). */
 export function effectiveNoise(spot, date) {
   const h = date.getHours();
-  for (const r of spot.noiseRules) if (inHourWindow(h, r.fromHour, r.toHour)) return r.noise;
+  const day = date.getDay();
+  for (const r of spot.noiseRules) {
+    const dayOk = !r.days || r.days.includes(day);
+    const hourOk = r.fromHour == null || inHourWindow(h, r.fromHour, r.toHour);
+    if (dayOk && hourOk) return r.noise;
+  }
   return spot.noise;
 }
 
@@ -42,6 +48,11 @@ function coffeeToday(spot, date) {
 export function hardFilter(spot, { now, hasCar }) {
   if (spot.closedDays.includes(now.getDay())) return 'closed today';
   if (spot.requiresCar && !hasCar) return 'needs a car or a long walk';
+  if (spot.hours) {
+    const left = minutesUntilClose(spot, now);
+    if (left == null) return 'closed now';
+    if (left < CONFIG.CLOSING_BUFFER_MIN) return `closes in ${left} min`;
+  }
   return null;
 }
 

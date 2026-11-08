@@ -11,6 +11,9 @@ export const CONFIG = {
   WEST_LAFAYETTE: { lat: 40.4237, lng: -86.9212 },
   MAX_DISTANCE_FROM_CAMPUS_KM: 3, // GPS fix farther than this → ask for a dining court
 
+  // Spots with `hours` are removed when closed or closing within this many minutes.
+  CLOSING_BUFFER_MIN: 45,
+
   // Walking-time model.
   WALK_SPEED_KMH: 4.8,
   DETOUR_FACTOR: 1.3, // straight line → real sidewalk distance
@@ -47,11 +50,32 @@ export const NOISE = { QUIET: 0, CHILL: 1, BUZZY: 2, LOUD: 3 };
 // ---------------------------------------------------------------------------
 // Spots
 //
+// Opening hours. Only spots with an `hours` field are checked; everything else
+// is assumed open. Keys are JS Date#getDay() (0 = Sunday); values are
+// [open, close] in minutes since midnight (1440 = 12am midnight).
+// ---------------------------------------------------------------------------
+export const HOURS = {
+  // Stewart Center library (HSSE) and Hicks Undergraduate Library share these.
+  // From Purdue Libraries' hours page (LibCal), checked Nov 2026. Re-check each
+  // semester and around breaks/finals: https://www.lib.purdue.edu/hours
+  STEW_LIBRARY: {
+    0: [13 * 60, 24 * 60], // Sun 1pm–12am
+    1: [8 * 60, 24 * 60],  // Mon 8am–12am
+    2: [8 * 60, 24 * 60],  // Tue
+    3: [8 * 60, 24 * 60],  // Wed
+    4: [8 * 60, 24 * 60],  // Thu 8am–12am
+    5: [8 * 60, 18 * 60],  // Fri 8am–6pm
+    6: [13 * 60, 17 * 60], // Sat 1pm–5pm
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Field guide:
 //   shortName    optional label for the wheel (keep ≤ 15 characters)
 //   noise        NOISE level (QUIET 0, CHILL 1, BUZZY 2, LOUD 3)
-//   noiseRules   time-of-day overrides: [{ fromHour, toHour, noise }]
-//                (window wraps past midnight when fromHour > toHour)
+//   noiseRules   overrides: [{ fromHour, toHour, days, noise }]
+//                fromHour/toHour: time window (wraps past midnight when fromHour > toHour)
+//                days: which weekdays it applies to (0 = Sun); omit either to mean "always"
 //   goodFor      'solo' | 'group' | 'both'
 //   coffee       0 none, 1 market/food nearby, 2 coffee on site
 //   coffeeDays   days the coffee/market counts (null = every day)
@@ -63,6 +87,7 @@ export const NOISE = { QUIET: 0, CHILL: 1, BUZZY: 2, LOUD: 3 };
 //   lowPriority  flat penalty
 //   requiresCar  removed unless the group has a car / will walk far
 //   closedDays   days the spot is closed entirely
+//   hours        HOURS preset; removed when closed or closing soon (null = always open)
 //   timeRules    [{ fromHour, toHour, penalty, why }] time-based penalties
 //   quirks       ['instruments'] → bad for "silence please"
 //   lat/lng/coordSource  from AT (below): spots in the same building share coordinates
@@ -79,6 +104,7 @@ const base = {
   lowPriority: false,
   requiresCar: false,
   closedDays: [],
+  hours: null,
   timeRules: [],
   quirks: [],
   vibe: '', // one cute line shown under the spot name on the result screen
@@ -106,6 +132,7 @@ const AT = {
   chaneyHale: { lat: 40.42859, lng: -86.91552, coordSource: 'osm' },
   downtown: { lat: 40.41687, lng: -86.88931, coordSource: 'osm' }, // ~Tippecanoe County Public Library
   msee: { lat: 40.42934, lng: -86.91267, coordSource: 'osm' },
+  lawson: { lat: 40.42778, lng: -86.91699, coordSource: 'osm' },
   burtonMorgan: { lat: 40.42375, lng: -86.92285, coordSource: 'osm' },
   meredithSouth: { lat: 40.4256, lng: -86.92317, coordSource: 'osm' },
 };
@@ -127,13 +154,13 @@ export const SPOTS = [
   // --- Stewart Center ---
   spot({
     id: 'stew', name: 'Stew library', shortName: 'Stew', fullName: 'Stewart Center library', ...AT.stew,
-    noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
+    noise: NOISE.QUIET, goodFor: 'solo', lockIn: true, hours: HOURS.STEW_LIBRARY,
     vibe: 'Old-school library lock-in. Phones down, heads down.',
     mapsQuery: 'Stewart Center, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'stew-basement', name: 'Stew basement', ...AT.stew,
-    noise: NOISE.QUIET, goodFor: 'solo', lockIn: true,
+    noise: NOISE.QUIET, goodFor: 'solo', lockIn: true, hours: HOURS.STEW_LIBRARY,
     vibe: 'Down in the basement, where the real lock-ins happen. 🔒',
     mapsQuery: 'Stewart Center, Purdue University, West Lafayette, IN',
   }),
@@ -269,6 +296,15 @@ export const SPOTS = [
     noise: NOISE.CHILL, goodFor: 'both',
     vibe: 'Chill engineering-building study area.',
     mapsQuery: 'MSEE Building, Purdue University, West Lafayette, IN',
+  }),
+  spot({
+    id: 'lawson', name: 'Lawson (CS building)', shortName: 'Lawson', fullName: 'Lawson Computer Science Building', ...AT.lawson,
+    noise: NOISE.BUZZY,
+    noiseRules: [{ days: [0, 6], noise: NOISE.QUIET }], // busy on school days, quiet on weekends
+    goodFor: 'both', oftenFull: 1,
+    coffee: 1, coffeeDays: [1, 2, 3, 4, 5], // On-the-GO! for food on school days
+    vibe: 'CS-building bustle on school days, calm on weekends. Grab food at On-the-GO during the week.',
+    mapsQuery: 'Lawson Computer Science Building, Purdue University, West Lafayette, IN',
   }),
   spot({
     id: 'burton-morgan', name: 'Burton Morgan', fullName: 'Burton D. Morgan Center for Entrepreneurship', ...AT.burtonMorgan,
